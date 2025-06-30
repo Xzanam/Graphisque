@@ -1,5 +1,6 @@
 #include "Application.h"
 #include "GLBuffer.h"
+#include "GLVertexArray.h"
 #include "Shader.h"
 
 
@@ -28,6 +29,9 @@ bool Application::init() {
         std::cerr << "Failed to initialize GLAD!" << std::endl; 
         return false; 
     } 
+
+    glViewport(0, 0, WIN_WIDTH, WIN_HEIGHT); // Set the viewport to the window size
+    glClearColor(0.2f, 0.3f, 0.3f, 1.0f); // Set the clear color to a light gray
 
     return true; 
 }
@@ -87,16 +91,8 @@ void Application::run() {
     };
     vbo.setData(vertices);
 
-    GLuint vao;
-    glGenVertexArrays(1, &vao);
-    glBindVertexArray(vao);
-
-    vbo.bind();
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-    glEnableVertexAttribArray(0);
-
-    glBindVertexArray(0); // Unbind VAO
-    vbo.unbind();
+    GLVertexArray vao;
+    vao.addVertexBuffer(vbo, 0, 3, GL_FLOAT); // Add vertex buffer to VAO with index 0
 
     Shader myShader = Shader("./shaders/vertex.vert", "./shaders/fragment.frag");
 
@@ -106,17 +102,14 @@ void Application::run() {
         // glEnable(GL_DEPTH_TEST); // Enable depth testing for 3D rendering
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // Clear the color and depth
 
+
         myShader.use();
-        glBindVertexArray(vao); // Bind the VAO
-        glDrawArrays(GL_LINE_STRIP, 0, 4); // Draw the triangle
+
+        vao.drawArrays(GL_TRIANGLES, 0, 3); // Draw the triangle using the VAO
         glBindVertexArray(0);
-        
-
-
         glfwPollEvents();
         glfwSwapBuffers(window); // Swap the front and back buffers
     } 
-     glDeleteVertexArrays(1, &vao); // Delete the VAO
 }
 
 
