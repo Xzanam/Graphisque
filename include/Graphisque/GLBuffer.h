@@ -61,7 +61,7 @@ class GLBuffer {
             return *this;
         }
 
-        //Delet4e copy constructor and copy assignment operator
+        //Delete copy constructor and copy assignment operator
         GLBuffer(const GLBuffer&) = delete;
         GLBuffer& operator=(const GLBuffer&) = delete;
 
