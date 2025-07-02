@@ -37,6 +37,7 @@ class Grid {
     Shader m_gridShader;
 
   public:
+
     // Constructor
     Grid(float cellSize = 0.2f, int gridLinesX = 10, int gridLinesY = 10, 
          float lineWidth = 1.0f)
@@ -51,10 +52,11 @@ class Grid {
         // Set default colors
         setMajorGridColor(0.8f, 0.8f, 0.8f, 1.0f);
         setMinorGridColor(0.4f, 0.4f, 0.4f, 0.8f);
-        
-        // Initialize OpenGL objects
+    }
+    void initGrid() { 
         initializeBuffers();
         generateGrid();
+
     }
 
         // Destructor
