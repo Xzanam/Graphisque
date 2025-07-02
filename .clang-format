@@ -1,0 +1,5 @@
+BasedOnStyle: LLVM
+BraceWrapping:
+  AfterFunction: false
+IndentWidth: 4
+ColumnLimit: 120
