@@ -51,7 +51,7 @@ class Grid {
       MouseState(): position(0.0f), lastPosition(0.0f), 
                     dragStart(0.0f), leftBButtonDown(false), 
                     isDragging(false), dragThreshold(3.0f) {}
-    };
+    } mousState;
 
     //Animation Parameters
     float m_panSmoothness;
@@ -62,6 +62,14 @@ class Grid {
     std::chrono::steady_clock::time_point m_lastUpdateTime;
 
     Shader m_gridShader;
+
+    //Helper Methods
+    void generateGridGeometry();
+    void updateBuffers();
+    glm::vec2 screenToWorld(const glm::vec2& screenPos) const;
+    glm::vec2 worldToScreen(const glm::vec2& worldPos) const;
+    glm::mat4 getViewMatrix() const;
+    glm::mat4 getProjectionMatrix() const;  
 
   public:
 
