@@ -1,9 +1,12 @@
 #include "GLVertexArray.h"
 #include <glad/glad.h>
+#include <GLFW/glfw3.h>
 #include <memory>
 #include <algorithm>
 #include "Shader.h"
+
 #include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 #include <chrono>
 
 class Grid {
@@ -23,7 +26,7 @@ class Grid {
 
     glm::vec4 m_majorGridColor; // Major grid color
     glm::vec4 m_minorGridColor; // Minor grid color
-    float m_majorGridInterval;
+    int m_majorGridInterval;
 
      // View parameters
     float m_zoomLevel;          // Zoom level (1.0 = normal)
@@ -44,14 +47,14 @@ class Grid {
       glm::vec2 position;
       glm::vec2 lastPosition;
       glm::vec2 dragStart;
-      bool leftBButtonDown;
+      bool leftButtonDown;
       bool isDragging;
       float dragThreshold;
 
       MouseState(): position(0.0f), lastPosition(0.0f), 
-                    dragStart(0.0f), leftBButtonDown(false), 
+                    dragStart(0.0f), leftButtonDown(false), 
                     isDragging(false), dragThreshold(3.0f) {}
-    } mousState;
+    } m_mouseState;
 
     //Animation Parameters
     float m_panSmoothness;
@@ -99,10 +102,13 @@ class Grid {
     
 
     //Input Handling 
-    void handleMouseButton(int button, int action, double xPos, double yPos);
+    void handleMouseButton(int button, int action, int mods, double xPos, double yPos);
     void handleMouseMove(double xPos,double yPos);
     void handleMouseScroll(double xOffset, double yOffset);
 
+    glm::mat4 getMVPMatrix() const {
+        return getProjectionMatrix() * getViewMatrix();
+    }
 
     //View Manipulation
     void setPan(float x, float y, bool smooth = true);
@@ -132,12 +138,12 @@ class Grid {
     void setMajorGridColor(float r, float g, float b, float a = 1.0f);
     void setMinorGridColor(float r, float g, float b, float a = 1.0f);
     void setMajorGridColor(const glm::vec4& color) ;
-    void setMinorGridColot(const glm::vec4& color);
+    void setMinorGridColor(const glm::vec4& color);
 
 
     //Animation settings
     void setSmoothTransitions(bool enabled);
-    void setPanSmootheness(float smoothness);
+    void setPanSmoothness(float smoothness);
     void setZoomSmoothness(float smoothness);
     void setZoomLimits(float minZoom, float maxZoom);
 
@@ -175,7 +181,7 @@ class Grid {
     // // Initialize OpenGL buffers
     // void initializeBuffers() {
     //     try {
-    //         m_vertexBuff m_panX(0.0f), m_panY(0.0f),er = std::make_unique<GLBuffer>(GL_ARRAY_BUFFER, GL_DYNAMIC_DRAW);
+    //         m_vertexBuffer = std::make_unique<GLBuffer>(GL_ARRAY_BUFFER, GL_DYNAMIC_DRAW);
     //         m_vertexArray = std::make_unique<GLVertexArray>();
     //     } catch (const std::exception& e) {
     //         throw std::runtime_error("Failed to initialize grid buffers: " + std::string(e.what()));
