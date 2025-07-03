@@ -1,17 +1,21 @@
 #version 330 core
-out vec4 FragColor;
+
+in float gridLine;
 
 uniform vec4 majorGridColor; // Color for major grid lines
 uniform vec4 minorGridColor; // Color for minor grid lines
-uniform int majorGridInterval; // Interval for major grid lines
 
-// This uniform can be used to differentiate between major and minor grid lines
-uniform bool isMajorGrid;
+uniform float zoomLevel;
+
+out vec4 FragColor;
 
 void main() {
-    if (isMajorGrid) {
-        FragColor = majorGridColor;
-    } else {
-        FragColor = minorGridColor;
+    float alpha = 1.0;
+    if(gridLine == 0.0){ 
+        alpha = smoothstep(0.1, 0.5, zoomLevel);
     }
+    vec4 color = mix(minorGridColor, majorGridColor, gridLine);
+    color.a *= alpha;
+
+    FragColor = color;
 }
