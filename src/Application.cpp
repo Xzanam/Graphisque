@@ -12,7 +12,7 @@ Application::Application(const std::string& title , int width , int height) : ti
     std::cout << "Application started with title: " << title 
               << ", width: " << width 
               << ", height: " << height << std::endl; 
-            grid = new Grid(1.0f, 50, 50, 2.0f); // Initialize grid with cell size, lines, and line width
+            grid = new Grid(1.0f, 500, 500, 2.0f); // Initialize grid with cell size, lines, and line width
             init();
 }
 
@@ -198,17 +198,19 @@ void Application::run() {
         // processInput(deltaTime);
 
   
+     
+
+        grid->update(deltaTime);
+        
+
+        grid->render();
+
         glm::mat4 mvp = grid->getMVPMatrix();
         drawShader->use();
         drawShader->setMat4("mvp", mvp);
 
         vao.drawArrays(GL_TRIANGLES, 0, 4); // Draw the triangle using the VAO
         glBindVertexArray(0); // Unbind the VAO
-
-        grid->update(deltaTime);
-        
-
-        grid->render();
 
         glfwPollEvents();
         glfwSwapBuffers(window); // Swap the front and back buffers

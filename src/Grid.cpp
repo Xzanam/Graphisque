@@ -143,7 +143,7 @@ void Grid::handleMouseButton(int button, int action,int mods, double xPos, doubl
             m_mouseState.leftButtonDown = true;
             m_mouseState.dragStart = glm::vec2(xPos, yPos);
             m_mouseState.lastPosition = glm::vec2(xPos, yPos);
-            m_mouseState.isDragging = false; // Reset dragging state on press
+            m_mouseState.isDragging = true; // Reset dragging state on press
         } else if (action == GLFW_RELEASE) {
             m_mouseState.leftButtonDown = false;
             m_mouseState.isDragging = false;

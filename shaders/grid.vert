@@ -5,19 +5,22 @@ uniform mat4 mvp;
 uniform float cellSize;
 uniform int majorGridInterval;
 
-out float gridLine;
+flat out float gridLine;
 void main() 
 {
     gl_Position = mvp * vec4(aPos, 1.0f);
+    float epsilon = 0.01;
 
     //Determine if this is major grid line
-    float lineIndex = round(aPos.x / cellSize);
-    gridLine = mod(lineIndex, float(majorGridInterval)) == 0.0 ? 1.0 : 0.0;
+    float lineIndex = abs(round(aPos.x / cellSize));
+    float m = mod(lineIndex, float(majorGridInterval));
+    gridLine = abs(m) < epsilon? 1.0 : 0.0;
 
     //Check for horizontal lines aswell
     if(gridLine == 0.0) { 
         lineIndex = round(aPos.y / cellSize); 
-        gridLine = mod(lineIndex, float(majorGridInterval)) == 0.0 ? 1.0f : 0.0;
+        float m = mod(lineIndex, float(majorGridInterval));
+        gridLine = abs(m) < epsilon ? 1.0 : 0.0;
     }
 
 }

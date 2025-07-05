@@ -1,6 +1,6 @@
 #version 330 core
 
-in float gridLine;
+flat in float gridLine;
 
 uniform vec4 majorGridColor; // Color for major grid lines
 uniform vec4 minorGridColor; // Color for minor grid lines
