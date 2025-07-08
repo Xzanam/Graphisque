@@ -5,6 +5,8 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include "Globals.h"
+#include <memory>
+#include "Shader.h"
 
 
 
@@ -18,11 +20,13 @@ class Application {
         float lastX, lastY; 
 
         Application* getApplicationPtr(); // Static method to get the application pointer from GLFW window user pointer
+        std::shared_ptr<Shader> _mainShader;
     
     public: 
         Application(const std::string& title = "Default", int width = WinWidth, int height=WinHeight);
         bool init(); 
         bool initGLFW();
+        bool initShader();
         void processInput();
 
 
