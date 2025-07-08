@@ -406,4 +406,6 @@ private:
     }
 };
 
+using VerteXArray = GLVertexArray;
+
 #endif // VAO_H
