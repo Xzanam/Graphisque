@@ -4,9 +4,8 @@
 #include <iostream> 
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
+#include "Globals.h"
 
-#define WinWidth 800
-#define WinHeight 600
 
 
 
@@ -17,6 +16,8 @@ class Application {
         int WIN_WIDTH; // Width of the window
         int WIN_HEIGHT; // Height of the window
         float lastX, lastY; 
+
+        Application* getApplicationPtr(); // Static method to get the application pointer from GLFW window user pointer
     
     public: 
         Application(const std::string& title = "Default", int width = WinWidth, int height=WinHeight);
