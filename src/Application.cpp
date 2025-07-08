@@ -30,8 +30,12 @@ bool Application::init() {
         return false; 
     } 
 
+    initShader();
+
     glViewport(0, 0, WIN_WIDTH, WIN_HEIGHT); // Set the viewport to the window size
     glClearColor(0.2f, 0.3f, 0.3f, 1.0f); // Set the clear color to a light gray
+
+
 
     return true; 
 }
@@ -56,6 +60,17 @@ bool Application::initGLFW() {
     }
     std::cout<< "GLFW initialized and window created successfully!" << std::endl;
     return true; 
+}
+
+bool Application::initShader() { 
+    try {
+        _mainShader = std::make_shared<Shader>("./shaders/vertex.vert", "./shaders/fragment.frag");
+        std::cout << "Shader initialized successfully!" << std::endl;
+        return true;
+    } catch (const std::exception& e) {
+        std::cerr << "Failed to initialize shader: " << e.what() << std::endl;
+        return false;
+    }
 }
  
 void Application::processInput() { 
@@ -94,7 +109,6 @@ void Application::run() {
     GLVertexArray vao;
     vao.addVertexBuffer(vbo, 0, 3, GL_FLOAT); // Add vertex buffer to VAO with index 0
 
-    Shader myShader = Shader("./shaders/vertex.vert", "./shaders/fragment.frag");
 
 
 
@@ -103,9 +117,10 @@ void Application::run() {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // Clear the color and depth
 
 
-        myShader.use();
-
+        _mainShader->use();
         vao.drawArrays(GL_TRIANGLES, 0, 3); // Draw the triangle using the VAO
+
+
         glBindVertexArray(0);
         glfwPollEvents();
         glfwSwapBuffers(window); // Swap the front and back buffers
