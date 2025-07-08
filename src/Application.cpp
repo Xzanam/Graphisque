@@ -34,6 +34,9 @@ bool Application::init() {
 
     initShader();
 
+    updateProjectionMatrix();
+    updateViewMatrix();
+
     glViewport(0, 0, WIN_WIDTH, WIN_HEIGHT); // Set the viewport to the window size
     glClearColor(0.2f, 0.3f, 0.3f, 1.0f); // Set the clear color to a light gray
 
@@ -78,14 +81,30 @@ bool Application::initShader() {
 
 }
  
-void Application::processInput() { 
+void Application::processInput(float deltaTime) { 
     if (glfwGetKey(this->window, GLFW_KEY_ESCAPE) == GLFW_PRESS) { 
         glfwSetWindowShouldClose(this->window, true); 
-    } 
-    if(glfwGetKey(this->window, GLFW_KEY_W) == GLFW_PRESS) { 
-        devCamera->handleCameraMovement(FORWARD, 0.1f);
     }
+    if(glfwGetKey(this->window, GLFW_KEY_W) == GLFW_PRESS) { 
+        devCamera->handleCameraMovement(FORWARD, deltaTime);
+        _mainShader->setMat4("view", devCamera->getViewMatrix()); 
+
+    } 
+    if(glfwGetKey(this->window, GLFW_KEY_S) == GLFW_PRESS) { 
+        devCamera->handleCameraMovement(BACKWARD, deltaTime);
+        _mainShader->setMat4("view", devCamera->getViewMatrix()); 
+    }
+    if(glfwGetKey(this->window, GLFW_KEY_A) == GLFW_PRESS) { 
+        devCamera->handleCameraMovement(LEFT, deltaTime);
+        _mainShader->setMat4("view", devCamera->getViewMatrix()); 
+    }
+    if(glfwGetKey(this->window, GLFW_KEY_D) == GLFW_PRESS) { 
+        devCamera->handleCameraMovement(RIGHT, deltaTime);
+        _mainShader->setMat4("view", devCamera->getViewMatrix()); 
+    }   
+
 }
+
 
 void Application::render(){ 
     std::cout << "Rendering..." << std::endl;
@@ -107,22 +126,26 @@ void Application::run() {
 
     auto vbo = createVertexBuffer(GL_STATIC_DRAW);
     std::vector<float> vertices = {
-        -0.5f, -0.5f, 0.0f, // Bottom left
-         0.5f, -0.5f, 0.0f, // Bottom right
-         0.0f,  0.5f, 0.0f,  // Top
-         -0.5f, 0.7f, 0.0f
+        -100.0f, -100.0f, 0.0f, // Bottom left
+        100.0f, -100.0f, 0.0f, // Bottom right
+         0.0f,  100.0f, 0.0f,  // Top
     };
     vbo.setData(vertices);
 
     GLVertexArray vao;
     vao.addVertexBuffer(vbo, 0, 3, GL_FLOAT); // Add vertex buffer to VAO with index 0
 
-
-
+    lastFrame = static_cast<float>(glfwGetTime());
 
     while(!glfwWindowShouldClose(this->window)) { 
         // glEnable(GL_DEPTH_TEST); // Enable depth testing for 3D rendering
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // Clear the color and depth
+
+        //Process input 
+        float currentFrame = static_cast<float>(glfwGetTime());
+        deltaTime = currentFrame - lastFrame;
+        lastFrame = currentFrame; 
+        processInput(deltaTime);
 
 
         _mainShader->use();

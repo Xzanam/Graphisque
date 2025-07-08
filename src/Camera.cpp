@@ -2,7 +2,7 @@
 
 
 Camera::Camera(glm::vec3 position, glm::vec3 up)
-    : _position(position), _front(glm::vec3(0.0f, 0.0f, 0.0f)), _up(up) {
+    : _position(position), _front(glm::vec3(0.0f, 0.0f, -1.0f)), _up(up) {
     _right = glm::normalize(glm::cross(_front, _up));
     _lookAt = glm::lookAt(_position, _position + _front, _up);
 }   
@@ -40,5 +40,6 @@ void Camera::handleCameraMovement(CameraMovement direction, float deltaTime) {
             break;
     }
     _lookAt = glm::lookAt(_position, _position + _front, _up);
+    printPosition();
 }   
 

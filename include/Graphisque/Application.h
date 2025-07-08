@@ -27,6 +27,10 @@ class Application {
         glm::mat4 projection;
 
 
+        float deltaTime;
+        float lastFrame;
+
+
         Application* getApplicationPtr(); // Static method to get the application pointer from GLFW window user pointer
         std::shared_ptr<Shader> _mainShader;
         std::shared_ptr<Camera> devCamera;
@@ -36,7 +40,7 @@ class Application {
         bool init(); 
         bool initGLFW();
         bool initShader();
-        void processInput();
+        void processInput(float deltaTime);
 
         void render();
         void run() ;
@@ -45,6 +49,9 @@ class Application {
         //update projection matrix
         void updateProjectionMatrix();
         void updateViewMatrix() ;
+        void processCameraMovement(float deltaTime);
+        
+
 
 
         //callback functions 
