@@ -1,7 +1,4 @@
 #include "Application.h"
-#include "GLBuffer.h"
-#include "GLVertexArray.h"
-#include "Shader.h"
 
 
 
@@ -32,6 +29,8 @@ bool Application::init() {
         std::cerr << "Failed to initialize GLAD!" << std::endl; 
         return false; 
     } 
+
+    devCamera = std::make_shared<Camera>(glm::vec3(0.0f, 0.0f, 3.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 
     initShader();
 
@@ -76,12 +75,16 @@ bool Application::initShader() {
         std::cerr << "Failed to initialize shader: " << e.what() << std::endl;
         return false;
     }
+
 }
  
 void Application::processInput() { 
     if (glfwGetKey(this->window, GLFW_KEY_ESCAPE) == GLFW_PRESS) { 
         glfwSetWindowShouldClose(this->window, true); 
     } 
+    if(glfwGetKey(this->window, GLFW_KEY_W) == GLFW_PRESS) { 
+        devCamera->handleCameraMovement(FORWARD, 0.1f);
+    }
 }
 
 void Application::render(){ 
@@ -132,5 +135,44 @@ void Application::run() {
     } 
 }
 
+
+void Application::updateProjectionMatrix() { 
+    float aspectRatio = static_cast<float>(WIN_WIDTH) / static_cast<float>(WIN_HEIGHT);
+    float halfHeight = WIN_HEIGHT / 2.0f;
+    float halfWidth = aspectRatio * halfHeight;
+    projection = glm::ortho(-halfWidth, halfWidth, -halfHeight, halfHeight, -1.0f, 1.0f); // Orthographic projection matrix
+    if(_mainShader->ID != 0) {
+        _mainShader->use();
+        _mainShader->setMat4("projection", projection); // Set the projection matrix in the shader
+    } else {
+        std::cerr << "Error updating Projection Matrix: Shader not initialized!" << std::endl;
+    }   
+}
+
+
+void Application::updateViewMatrix() { 
+    // Update the view matrix if needed
+    // This can be used to set camera position, orientation, etc.
+    // For now, we will just print the current projection matrix
+    glm::mat4 view = glm::mat4(1.0f); // Identity matrix for view
+    if(_mainShader->ID != 0) {
+        _mainShader->use();
+        _mainShader->setMat4("view", view); // Set the view matrix in the shader
+    } else {
+        std::cerr << "Error updating View Matrix: Shader not initialized!" << std::endl;
+    }   
+}
+
+
+
+
+void Application::framebuffer_size_callback(GLFWwindow* window, int width, int height) {
+            glViewport(0, 0, width, height);
+            Application* app = static_cast<Application*>(glfwGetWindowUserPointer(window));
+            if(app) {
+                app->WIN_WIDTH = width;
+                app->WIN_HEIGHT = height;
+            }
+        }   
 
 

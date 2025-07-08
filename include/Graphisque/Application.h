@@ -4,9 +4,15 @@
 #include <iostream> 
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
-#include "Globals.h"
 #include <memory>
+#include <glm/gtc/matrix_transform.hpp>
+
+#include "Globals.h"
+#include "GLBuffer.h"
+#include "GLVertexArray.h"
 #include "Shader.h"
+#include "Camera.h"
+
 
 
 
@@ -18,25 +24,33 @@ class Application {
         int WIN_WIDTH; // Width of the window
         int WIN_HEIGHT; // Height of the window
         float lastX, lastY; 
+        glm::mat4 projection;
+
 
         Application* getApplicationPtr(); // Static method to get the application pointer from GLFW window user pointer
         std::shared_ptr<Shader> _mainShader;
+        std::shared_ptr<Camera> devCamera;
     
     public: 
-        Application(const std::string& title = "Default", int width = WinWidth, int height=WinHeight);
+        Application(const std::string& title = "Default", int width = G_WinWidth, int height=G_WinHeight);
         bool init(); 
         bool initGLFW();
         bool initShader();
         void processInput();
 
-
         void render();
-        ~Application() ;
-
-
-
-        
         void run() ;
+        
+
+        //update projection matrix
+        void updateProjectionMatrix();
+        void updateViewMatrix() ;
+
+
+        //callback functions 
+        static void framebuffer_size_callback(GLFWwindow* window, int width, int height) ;
+
+        ~Application() ;
 };
 
 
