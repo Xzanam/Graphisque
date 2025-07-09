@@ -30,9 +30,12 @@ bool Application::init() {
         return false; 
     } 
 
-    devCamera = std::make_shared<Camera>(glm::vec3(0.0f, 0.0f, 3.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 
     initShader();
+
+    devCamera = std::make_shared<Camera>(glm::vec3(0.0f, 0.0f, 3.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+
+    initGrid3D();
 
     updateProjectionMatrix();
     updateViewMatrix();
@@ -79,6 +82,11 @@ bool Application::initShader() {
         return false;
     }
 
+}
+
+void Application::initGrid3D() { 
+    GridConfig config;
+    grid3D = std::make_shared<Grid3D>(config, *_mainShader);
 }
  
 void Application::processInput(float deltaTime) { 
@@ -151,6 +159,7 @@ void Application::run() {
         _mainShader->use();
         vao.drawArrays(GL_TRIANGLES, 0, 3); // Draw the triangle using the VAO
 
+        grid3D->render(*devCamera);
 
         glBindVertexArray(0);
         glfwPollEvents();

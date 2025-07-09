@@ -13,6 +13,7 @@
 #include "Shader.h"
 #include "Camera.h"
 
+#include "Grid3D.h"
 
 
 
@@ -34,12 +35,17 @@ class Application {
         Application* getApplicationPtr(); // Static method to get the application pointer from GLFW window user pointer
         std::shared_ptr<Shader> _mainShader;
         std::shared_ptr<Camera> devCamera;
+
+        std::shared_ptr<Grid3D> grid3D;
+
+
     
     public: 
         Application(const std::string& title = "Default", int width = G_WinWidth, int height=G_WinHeight);
         bool init(); 
         bool initGLFW();
         bool initShader();
+        void initGrid3D();
         void processInput(float deltaTime);
 
         void render();
