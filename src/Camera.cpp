@@ -43,3 +43,13 @@ void Camera::handleCameraMovement(CameraMovement direction, float deltaTime) {
     printPosition();
 }   
 
+
+
+void Camera::setProjectionMatrix(glm::mat4 projection){ 
+
+            projectionMatrix = projection;
+        }
+    
+glm::mat4 Camera::getProjectionMatrix() const{ 
+    return projectionMatrix;
+}
