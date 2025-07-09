@@ -1,7 +1,4 @@
 #include "Application.h"
-#include "GLBuffer.h"
-#include "GLVertexArray.h"
-#include "Shader.h"
 
 
 
@@ -12,6 +9,9 @@ Application::Application(const std::string& title , int width , int height) : ti
             init();
 }
 
+Application* Application::getApplicationPtr() { 
+    return static_cast<Application*>(glfwGetWindowUserPointer(this->window));
+}
 
 bool Application::init() { 
 
@@ -30,7 +30,12 @@ bool Application::init() {
         return false; 
     } 
 
+    devCamera = std::make_shared<Camera>(glm::vec3(0.0f, 0.0f, 3.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+
     initShader();
+
+    updateProjectionMatrix();
+    updateViewMatrix();
 
     glViewport(0, 0, WIN_WIDTH, WIN_HEIGHT); // Set the viewport to the window size
     glClearColor(0.2f, 0.3f, 0.3f, 1.0f); // Set the clear color to a light gray
@@ -49,6 +54,8 @@ bool Application::initGLFW() {
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE,GLFW_OPENGL_CORE_PROFILE);
+
+    glfwWindowHint(GLFW_SAMPLES, 4);
 
     //create window
     this->window = glfwCreateWindow(WIN_WIDTH, WIN_HEIGHT, title.c_str(), nullptr, nullptr); 
@@ -71,13 +78,33 @@ bool Application::initShader() {
         std::cerr << "Failed to initialize shader: " << e.what() << std::endl;
         return false;
     }
+
 }
  
-void Application::processInput() { 
+void Application::processInput(float deltaTime) { 
     if (glfwGetKey(this->window, GLFW_KEY_ESCAPE) == GLFW_PRESS) { 
         glfwSetWindowShouldClose(this->window, true); 
+    }
+    if(glfwGetKey(this->window, GLFW_KEY_W) == GLFW_PRESS) { 
+        devCamera->handleCameraMovement(FORWARD, deltaTime);
+        _mainShader->setMat4("view", devCamera->getViewMatrix()); 
+
     } 
+    if(glfwGetKey(this->window, GLFW_KEY_S) == GLFW_PRESS) { 
+        devCamera->handleCameraMovement(BACKWARD, deltaTime);
+        _mainShader->setMat4("view", devCamera->getViewMatrix()); 
+    }
+    if(glfwGetKey(this->window, GLFW_KEY_A) == GLFW_PRESS) { 
+        devCamera->handleCameraMovement(LEFT, deltaTime);
+        _mainShader->setMat4("view", devCamera->getViewMatrix()); 
+    }
+    if(glfwGetKey(this->window, GLFW_KEY_D) == GLFW_PRESS) { 
+        devCamera->handleCameraMovement(RIGHT, deltaTime);
+        _mainShader->setMat4("view", devCamera->getViewMatrix()); 
+    }   
+
 }
+
 
 void Application::render(){ 
     std::cout << "Rendering..." << std::endl;
@@ -99,22 +126,26 @@ void Application::run() {
 
     auto vbo = createVertexBuffer(GL_STATIC_DRAW);
     std::vector<float> vertices = {
-        -0.5f, -0.5f, 0.0f, // Bottom left
-         0.5f, -0.5f, 0.0f, // Bottom right
-         0.0f,  0.5f, 0.0f,  // Top
-         -0.5f, 0.7f, 0.0f
+        -100.0f, -100.0f, 0.0f, // Bottom left
+        100.0f, -100.0f, 0.0f, // Bottom right
+         0.0f,  100.0f, 0.0f,  // Top
     };
     vbo.setData(vertices);
 
     GLVertexArray vao;
     vao.addVertexBuffer(vbo, 0, 3, GL_FLOAT); // Add vertex buffer to VAO with index 0
 
-
-
+    lastFrame = static_cast<float>(glfwGetTime());
 
     while(!glfwWindowShouldClose(this->window)) { 
         // glEnable(GL_DEPTH_TEST); // Enable depth testing for 3D rendering
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // Clear the color and depth
+
+        //Process input 
+        float currentFrame = static_cast<float>(glfwGetTime());
+        deltaTime = currentFrame - lastFrame;
+        lastFrame = currentFrame; 
+        processInput(deltaTime);
 
 
         _mainShader->use();
@@ -127,5 +158,44 @@ void Application::run() {
     } 
 }
 
+
+void Application::updateProjectionMatrix() { 
+    float aspectRatio = static_cast<float>(WIN_WIDTH) / static_cast<float>(WIN_HEIGHT);
+    float halfHeight = WIN_HEIGHT / 2.0f;
+    float halfWidth = aspectRatio * halfHeight;
+    projection = glm::ortho(-halfWidth, halfWidth, -halfHeight, halfHeight, -1.0f, 1.0f); // Orthographic projection matrix
+    if(_mainShader->ID != 0) {
+        _mainShader->use();
+        _mainShader->setMat4("projection", projection); // Set the projection matrix in the shader
+    } else {
+        std::cerr << "Error updating Projection Matrix: Shader not initialized!" << std::endl;
+    }   
+}
+
+
+void Application::updateViewMatrix() { 
+    // Update the view matrix if needed
+    // This can be used to set camera position, orientation, etc.
+    // For now, we will just print the current projection matrix
+    glm::mat4 view = glm::mat4(1.0f); // Identity matrix for view
+    if(_mainShader->ID != 0) {
+        _mainShader->use();
+        _mainShader->setMat4("view", view); // Set the view matrix in the shader
+    } else {
+        std::cerr << "Error updating View Matrix: Shader not initialized!" << std::endl;
+    }   
+}
+
+
+
+
+void Application::framebuffer_size_callback(GLFWwindow* window, int width, int height) {
+            glViewport(0, 0, width, height);
+            Application* app = static_cast<Application*>(glfwGetWindowUserPointer(window));
+            if(app) {
+                app->WIN_WIDTH = width;
+                app->WIN_HEIGHT = height;
+            }
+        }   
 
 
