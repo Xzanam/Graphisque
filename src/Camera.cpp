@@ -1,10 +1,13 @@
 #include "Camera.h"
 
 
-Camera::Camera(glm::vec3 position, glm::vec3 up)
-    : _position(position), _front(glm::vec3(0.0f, 0.0f, -1.0f)), _up(up) {
-    _right = glm::normalize(glm::cross(_front, _up));
+Camera::Camera(glm::vec3 position, glm::vec3 up, float yaw, float pitch)
+    : _position(position), _front(glm::vec3(0.0f, 0.0f, -1.0f)), _up(up), _worldUp(up),  _yaw(yaw), _pitch(pitch) {
+    _right = glm::normalize(glm::cross(_front,_up));
     _lookAt = glm::lookAt(_position, _position + _front, _up);
+    _devMode = false;
+    _movementSpeed = GLOBAL::SPEED;
+    _mouseSensitivity = GLOBAL::SENSITIVITY;
 }   
 
 
@@ -17,7 +20,7 @@ void Camera::setPosition(const glm::vec3& position) {
     _lookAt = glm::lookAt(_position, _position + _front, _up);
 }
 
-void Camera::printPosition( ){ 
+void Camera::printPosition(){ 
     std::cout << "Camera Position: " 
         << _position.x << ", " 
         << _position.y << ", " 
@@ -38,8 +41,62 @@ void Camera::handleCameraMovement(CameraMovement direction, float deltaTime) {
         case RIGHT:
             _position += _right * velocity;
             break;
+        case UP: 
+            _position += _up * velocity;
+            break;
+        case DOWN: 
+            _position -= _up * velocity;
+            break;
+   
     }
     _lookAt = glm::lookAt(_position, _position + _front, _up);
     printPosition();
 }   
 
+
+void Camera::handleMouseMovement(float xOffset, float yOffset, GLboolean const constraintPitch) { 
+    xOffset *= _mouseSensitivity;
+    yOffset *= _mouseSensitivity;
+
+    _yaw += xOffset;
+    _pitch += yOffset;
+
+
+    if(constraintPitch) { 
+        if(_pitch > 89.0f)
+            _pitch = 89.0f;
+        if(_pitch < -89.0f) 
+            _pitch = -89.0f;
+    }
+    updateCameraVectors();
+
+}
+
+
+void Camera::updateCameraVectors()
+{
+    // calculate the new Front vector
+    glm::vec3 front;
+    front.x = cos(glm::radians(_yaw)) * cos(glm::radians(_pitch));
+    front.y = sin(glm::radians(_pitch));
+    front.z = sin(glm::radians(_yaw)) * cos(glm::radians(_pitch));
+    _front = glm::normalize(front);
+    // also re-calculate the Right and Up vector
+    _right = glm::normalize(glm::cross(_front, _worldUp));  // normalize the vectors, because their length gets closer to 0 the more you look up or down which results in slower movement.
+    _up    = glm::normalize(glm::cross(_right, _front));
+}
+
+
+
+void Camera::setProjectionMatrix(glm::mat4 projection){ 
+
+            projectionMatrix = projection;
+        }
+    
+glm::mat4 Camera::getProjectionMatrix() const{ 
+    return projectionMatrix;
+}
+
+void Camera::toggleDevCam(){ 
+    _devMode = !_devMode;
+}
