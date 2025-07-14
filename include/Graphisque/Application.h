@@ -14,6 +14,7 @@
 #include "Camera.h"
 
 #include "Grid3D.h"
+#include "Cube.h"
 
 
 
@@ -24,23 +25,26 @@ class Application {
         std::string title; // Title of the application
         int WIN_WIDTH; // Width of the window
         int WIN_HEIGHT; // Height of the window
-        float lastX, lastY; 
         glm::mat4 projection;
-
-
         float deltaTime;
         float lastFrame;
+        static Application* getApplicationPtr(GLFWwindow* window); // Static method to get the application pointer from GLFW window user pointer
 
-
-        Application* getApplicationPtr(); // Static method to get the application pointer from GLFW window user pointer
         std::shared_ptr<Shader> _mainShader;
         std::shared_ptr<Camera> devCamera;
 
         std::shared_ptr<Grid3D> grid3D;
 
 
+        Cube * cube;
+        void setupCallbacks();
+
+
     
     public: 
+
+        float _lastX, _lastY; 
+        bool _firstMouse =true;
         Application(const std::string& title = "Default", int width = G_WinWidth, int height=G_WinHeight);
         bool init(); 
         bool initGLFW();
@@ -48,7 +52,7 @@ class Application {
         void initGrid3D();
         void processInput(float deltaTime);
 
-        void render();
+        void render(float deltaTime);
         void run() ;
         
 
@@ -57,11 +61,14 @@ class Application {
         void updateViewMatrix() ;
         void processCameraMovement(float deltaTime);
         
+     
 
 
 
         //callback functions 
         static void framebuffer_size_callback(GLFWwindow* window, int width, int height) ;
+        static void cursor_pos_callback(GLFWwindow* window, double xPosIn, double yPosIn) ;
+
 
         ~Application() ;
 };

@@ -2,15 +2,15 @@
 
 
 
-Application::Application(const std::string& title , int width , int height) : title(title), WIN_WIDTH(width), WIN_HEIGHT(height), window(nullptr), lastX(width/2.0f), lastY(height/2.0f) { 
+Application::Application(const std::string& title , int width , int height) : title(title), 
+WIN_WIDTH(width), WIN_HEIGHT(height), window(nullptr), _lastX(width/2.0f), _lastY(height/2.0f) { 
     std::cout << "Application started with title: " << title 
               << ", width: " << width 
               << ", height: " << height << std::endl; 
-            init();
 }
 
-Application* Application::getApplicationPtr() { 
-    return static_cast<Application*>(glfwGetWindowUserPointer(this->window));
+Application* Application::getApplicationPtr(GLFWwindow* window) { 
+    return static_cast<Application*>(glfwGetWindowUserPointer(window));
 }
 
 bool Application::init() { 
@@ -30,19 +30,29 @@ bool Application::init() {
         return false; 
     } 
 
-
+    glEnable(GL_DEPTH_TEST); // Enable depth testing for 3D rendering
     initShader();
 
-    devCamera = std::make_shared<Camera>(glm::vec3(0.0f, 0.0f, 3.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+    setupCallbacks();
+    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
+
+    devCamera = std::make_shared<Camera>(glm::vec3(0.0f, 0.0f, 3.0f), glm::vec3(0.0f, 1.0f, 0.0f));
     initGrid3D();
 
-    updateProjectionMatrix();
-    updateViewMatrix();
+    // updateProjectionMatrix();
+    // updateViewMatrix();
+
 
     glViewport(0, 0, WIN_WIDTH, WIN_HEIGHT); // Set the viewport to the window size
     glClearColor(0.2f, 0.3f, 0.3f, 1.0f); // Set the clear color to a light gray
+    _mainShader->use();
+    _mainShader->setMat4("model", glm::mat4(1.0f));
 
+
+    // cube = new Cube();
+    // cube->setShader(_mainShader);
+    // cube->setPosition(glm::vec3(0.0f));
 
 
     return true; 
@@ -69,6 +79,9 @@ bool Application::initGLFW() {
         return false; 
     }
     std::cout<< "GLFW initialized and window created successfully!" << std::endl;
+
+    glfwSetWindowUserPointer(window , this);
+
     return true; 
 }
 
@@ -86,7 +99,7 @@ bool Application::initShader() {
 
 void Application::initGrid3D() { 
     GridConfig config;
-    grid3D = std::make_shared<Grid3D>(config, *_mainShader);
+    grid3D = std::make_shared<Grid3D>(config, _mainShader);
 }
  
 void Application::processInput(float deltaTime) { 
@@ -110,14 +123,80 @@ void Application::processInput(float deltaTime) {
         devCamera->handleCameraMovement(RIGHT, deltaTime);
         _mainShader->setMat4("view", devCamera->getViewMatrix()); 
     }   
+    if(glfwGetKey(this->window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS) { 
+        devCamera->handleCameraMovement(DOWN, deltaTime);
+        _mainShader->setMat4("view", devCamera->getViewMatrix()); 
+    }   
+    if(glfwGetKey(this->window,GLFW_KEY_SPACE ) == GLFW_PRESS) { 
+        devCamera->handleCameraMovement(UP, deltaTime);
+        _mainShader->setMat4("view", devCamera->getViewMatrix()); 
+    }   
 
 }
 
 
-void Application::render(){ 
-    std::cout << "Rendering..." << std::endl;
+void Application::render(float deltaTime){ 
+    // std::cout << "Rendering..." << std::endl;    
+    grid3D->render(*devCamera);
+
+    // cube->render(*devCamera);
+
 }
 
+
+
+void Application::run() { 
+    std::cout << "Running application..." << std::endl; 
+    glEnable(GL_LINE_SMOOTH);
+    glHint(GL_LINE_SMOOTH_HINT, GL_NICEST);
+
+ 
+    lastFrame = static_cast<float>(glfwGetTime());
+
+    float vertices[] = { 
+        -1.0f, 0.0f,0.0f, 
+        1.0f, 0.0f,0.0f, 
+        0.0f, 1.0f, 0.0f
+    };
+
+    VertexBuffer buffer;
+    buffer = createVertexBuffer();
+    buffer.setData(vertices, sizeof(vertices));
+    VerteXArray arrayobj;
+    arrayobj.addVertexBuffer(buffer, 0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+
+    glm::mat4 model = glm::mat4(1.0f);
+    glm::mat4 projection = glm::perspective(glm::radians(45.0f), float(WIN_WIDTH) / (float) WIN_HEIGHT, 0.1f, 100.0f);
+
+    _mainShader->use();
+    _mainShader->setMat4("model", model);
+    _mainShader->setMat4("projection", projection);
+
+
+
+
+
+
+    while(!glfwWindowShouldClose(this->window)) { 
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // Clear the color and depth
+
+        //Process input 
+        float currentFrame = static_cast<float>(glfwGetTime());
+        deltaTime = currentFrame - lastFrame;
+        lastFrame = currentFrame; 
+        processInput(deltaTime);
+
+        render(deltaTime);
+
+        // _mainShader->use();
+        // _mainShader->setMat4("view", devCamera->getViewMatrix());
+        // arrayobj.drawArrays(GL_TRIANGLES, 0, 3);
+
+
+        glfwSwapBuffers(window); // Swap the front and back buffers
+        glfwPollEvents();
+    } 
+}
 
 
 
@@ -127,55 +206,17 @@ Application::~Application() {
 }
 
 
-void Application::run() { 
-    std::cout << "Running application..." << std::endl; 
-    glEnable(GL_LINE_SMOOTH);
-    glHint(GL_LINE_SMOOTH_HINT, GL_NICEST);
-
-    auto vbo = createVertexBuffer(GL_STATIC_DRAW);
-    std::vector<float> vertices = {
-        -100.0f, -100.0f, 0.0f, // Bottom left
-        100.0f, -100.0f, 0.0f, // Bottom right
-         0.0f,  100.0f, 0.0f,  // Top
-    };
-    vbo.setData(vertices);
-
-    GLVertexArray vao;
-    vao.addVertexBuffer(vbo, 0, 3, GL_FLOAT); // Add vertex buffer to VAO with index 0
-
-    lastFrame = static_cast<float>(glfwGetTime());
-
-    while(!glfwWindowShouldClose(this->window)) { 
-        // glEnable(GL_DEPTH_TEST); // Enable depth testing for 3D rendering
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // Clear the color and depth
-
-        //Process input 
-        float currentFrame = static_cast<float>(glfwGetTime());
-        deltaTime = currentFrame - lastFrame;
-        lastFrame = currentFrame; 
-        processInput(deltaTime);
-
-
-        _mainShader->use();
-        vao.drawArrays(GL_TRIANGLES, 0, 3); // Draw the triangle using the VAO
-
-        grid3D->render(*devCamera);
-
-        glBindVertexArray(0);
-        glfwPollEvents();
-        glfwSwapBuffers(window); // Swap the front and back buffers
-    } 
-}
-
-
 void Application::updateProjectionMatrix() { 
     float aspectRatio = static_cast<float>(WIN_WIDTH) / static_cast<float>(WIN_HEIGHT);
     float halfHeight = WIN_HEIGHT / 2.0f;
     float halfWidth = aspectRatio * halfHeight;
-    projection = glm::ortho(-halfWidth, halfWidth, -halfHeight, halfHeight, -1.0f, 1.0f); // Orthographic projection matrix
+    projection = glm::perspective(glm::radians(45.0f), (float)WIN_WIDTH / (float) WIN_HEIGHT, 0.1f, 100.0f);
+    devCamera->setProjectionMatrix(projection);
     if(_mainShader->ID != 0) {
         _mainShader->use();
         _mainShader->setMat4("projection", projection); // Set the projection matrix in the shader
+        // _mainShader->setMat4("model" ,glm::mat4(1.0f));
+
     } else {
         std::cerr << "Error updating Projection Matrix: Shader not initialized!" << std::endl;
     }   
@@ -186,13 +227,19 @@ void Application::updateViewMatrix() {
     // Update the view matrix if needed
     // This can be used to set camera position, orientation, etc.
     // For now, we will just print the current projection matrix
-    glm::mat4 view = glm::mat4(1.0f); // Identity matrix for view
+    glm::mat4 view = devCamera->getViewMatrix(); // Identity matrix for view
     if(_mainShader->ID != 0) {
         _mainShader->use();
         _mainShader->setMat4("view", view); // Set the view matrix in the shader
     } else {
         std::cerr << "Error updating View Matrix: Shader not initialized!" << std::endl;
     }   
+}
+
+
+void Application::setupCallbacks(){ 
+    glfwSetFramebufferSizeCallback(this->window, framebuffer_size_callback);
+    glfwSetCursorPosCallback(this->window, cursor_pos_callback);
 }
 
 
@@ -207,4 +254,26 @@ void Application::framebuffer_size_callback(GLFWwindow* window, int width, int h
             }
         }   
 
+void Application::cursor_pos_callback(GLFWwindow* window, double xPosIn, double yPosIn) { 
+    Application * app = Application::getApplicationPtr(window);
+    if(!app ){ 
+        std::cerr<< "(cursor_pos_callback) Failed getting window:" << std::endl;
+        return;
+    }
+    float xpos = static_cast<float>(xPosIn);
+    float ypos = static_cast<float>(yPosIn);
+    if(app->_firstMouse) { 
+        app->_lastX = xpos;
+        app-> _lastY = ypos;
+        app->_firstMouse = false;
+    }
 
+    float xOffset = xpos - app->_lastX;
+    float yOffset = app->_lastY - ypos;
+
+    app->_lastX = xpos;
+    app->_lastY  = ypos;
+
+    app->devCamera->handleMouseMovement(xOffset, yOffset,GL_TRUE);
+
+}
