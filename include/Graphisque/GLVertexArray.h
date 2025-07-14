@@ -88,6 +88,15 @@ public:
     };
     
     // Add GLBuffer as vertex buffer and set up vertex attribute
+    /** 
+     * @breif Creates a VAO from provided VBO
+     * 
+     * @param buffer GLBuffer Object 
+     * @param index  Specifies the index of the generic vertex attribute to be modified
+     * @param size Specifies the number of components per generic vertex attrib
+     * @param normalized Specifies whether fixed point data should be normalized
+     * @param stride Specifies the byte offset between consecutive generic vertex attribute
+    **/
     void addVertexBuffer(GLBuffer& buffer, GLuint index, GLint size, GLenum type, 
                         GLboolean normalized = GL_FALSE, GLsizei stride = 0, 
                         const void* pointer = nullptr) {
