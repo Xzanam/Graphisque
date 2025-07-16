@@ -15,6 +15,7 @@
 
 #include "Grid3D.h"
 #include "Cube.h"
+#include "Axes.h"
 
 
 
@@ -34,6 +35,7 @@ class Application {
         std::shared_ptr<Camera> devCamera;
 
         std::shared_ptr<Grid3D> grid3D;
+        bool _isCursorHidden;
 
 
         Cube * cube;
@@ -68,6 +70,7 @@ class Application {
         //callback functions 
         static void framebuffer_size_callback(GLFWwindow* window, int width, int height) ;
         static void cursor_pos_callback(GLFWwindow* window, double xPosIn, double yPosIn) ;
+        static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
 
 
         ~Application() ;
