@@ -48,7 +48,7 @@ bool Application::init() {
 
 
     glViewport(0, 0, WIN_WIDTH, WIN_HEIGHT); // Set the viewport to the window size
-    glClearColor(0.2f, 0.3f, 0.3f, 1.0f); // Set the clear color to a light gray
+    // glClearColor(0.2f, 0.3f, 0.3f, 1.0f); // Set the clear color to a light gray
     _mainShader->use();
     _mainShader->setMat4("model", glm::mat4(1.0f));
 
@@ -139,7 +139,7 @@ void Application::processInput(float deltaTime) {
 
 void Application::render(float deltaTime){ 
     // std::cout << "Rendering..." << std::endl;    
-    grid3D->render(*devCamera);
+    // grid3D->render(*devCamera);
 
     // cube->render(*devCamera);
 
@@ -160,24 +160,60 @@ void Application::run() {
         1.0f, 0.0f,0.0f, 
         0.0f, 1.0f, 0.0f
     };
+    
+    float pyramidVertices[] = { 
+        0.0f, 2.0f, 0.0f, //topvertex
+        -1.0f, 0.0f, -1.0f,  // 
+        -1.0f, 0.0f, 1.0f, 
+        1.0f, 0.0f, 1.0f, 
+        1.0f, 0.0f, -1.0f
+    };
+
+    unsigned int indices[] = { 
+        //base of the pyramid
+        1, 2, 3,
+        1, 4, 3, 
+
+        //sides
+        0, 1, 2, 
+        0, 2, 3, 
+        0, 4, 4, 
+        0, 1, 4,
+
+
+    };
 
     VertexBuffer buffer;
     buffer = createVertexBuffer();
-    buffer.setData(vertices, sizeof(vertices));
+    buffer.setData(pyramidVertices, sizeof(pyramidVertices));
     VerteXArray arrayobj;
     arrayobj.addVertexBuffer(buffer, 0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    
+
+    unsigned int EBO;
+    glGenBuffers(1, &EBO);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+
+
 
     glm::mat4 model = glm::mat4(1.0f);
     glm::mat4 projection = glm::perspective(glm::radians(45.0f), float(WIN_WIDTH) / (float) WIN_HEIGHT, 0.1f, 100.0f);
+
+
+    model = glm::scale(model, glm::vec3(0.05f, 2.0f, 0.2f));
 
     _mainShader->use();
     _mainShader->setMat4("model", model);
     _mainShader->setMat4("projection", projection);
 
+    Cylinder cylinder(0.5f, 5.0f, 360);
 
 
-    Circle myCircle(5.0f);
 
+    Circle myCircle(10.0f);
+
+    glPolygonMode(GL_FRONT_AND_BACK , GL_LINE);
 
 
 
@@ -192,7 +228,16 @@ void Application::run() {
 
         render(deltaTime);
 
-        myCircle.render(*_mainShader, devCamera);
+        _mainShader->use();
+        _mainShader->setMat4("view", devCamera->getViewMatrix());
+
+        cylinder.draw();
+        
+
+
+
+
+        // myCircle.render(*_mainShader, devCamera);
         // _mainShader->use();
         // arrayobj.drawArrays(GL_TRIANGLES, 0, 3);
 
