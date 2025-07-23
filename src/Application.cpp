@@ -201,17 +201,16 @@ void Application::run() {
     glm::mat4 projection = glm::perspective(glm::radians(45.0f), float(WIN_WIDTH) / (float) WIN_HEIGHT, 0.1f, 100.0f);
 
 
-    model = glm::scale(model, glm::vec3(0.05f, 2.0f, 0.2f));
 
     _mainShader->use();
     _mainShader->setMat4("model", model);
     _mainShader->setMat4("projection", projection);
 
-    Cylinder cylinder(0.5f, 5.0f, 360);
+    Cylinder cylinder(0.5f, 5.0f,20);
 
 
 
-    Circle myCircle(10.0f);
+    // Circle myCircle(10.0f);
 
     glPolygonMode(GL_FRONT_AND_BACK , GL_LINE);
 
