@@ -205,10 +205,13 @@ void Application::run() {
     _mainShader->use();
     _mainShader->setMat4("model", model);
     _mainShader->setMat4("projection", projection);
+    devCamera->setPosition(glm::vec3(0.0f, 0.0f, 30.0f));
 
     Cylinder cylinder(0.5f, 5.0f,20);
 
+    Axes axes(false); 
 
+    Cone cone(1.0f, 5.0f);
 
     // Circle myCircle(10.0f);
 
@@ -229,8 +232,12 @@ void Application::run() {
 
         _mainShader->use();
         _mainShader->setMat4("view", devCamera->getViewMatrix());
+        // cone.draw();
 
-        cylinder.draw();
+        // cylinder.draw();
+
+        axes.draw(_mainShader);
+
         
 
 
