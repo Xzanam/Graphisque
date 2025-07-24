@@ -205,15 +205,15 @@ class Axis{
             shader->setMat4("model", arrowModel);
             _arrow.draw();
 
-            // if(_drawNegative) { 
-            //     glm::mat4 negModel = _model * glm::scale(glm::mat4(1.0f), glm::vec3(1.0f, -1.0f, 1.0f));
-            //     shader->setMat4("model", negModel);
-            //     _shaft.draw();
+            if(_drawNegative) { 
+                glm::mat4 negModel = _model * glm::scale(glm::mat4(1.0f), glm::vec3(1.0f, -1.0f, 1.0f));
+                shader->setMat4("model", negModel);
+                _shaft.draw();
 
-            //     glm::mat4 arrowModelNeg = glm::translate(negModel, glm::vec3(0.0f, - _shaft.getHeight(), 0.0f)) ;
-            //     shader->setMat4("model", arrowModelNeg);
-            //     _arrow.draw();
-            // }
+                glm::mat4 arrowModelNeg = glm::translate(negModel, glm::vec3(0.0f, _shaft.getHeight(), 0.0f)) ;
+                shader->setMat4("model", arrowModelNeg);
+                _arrow.draw();
+            }
         }
 
 };
@@ -226,8 +226,10 @@ class Axes {
 
 
     public: 
-        Axes(bool showNeg = true) 
-        : xAxis(), yAxis(), zAxis()
+        Axes(float shaftLength, float shaftRadius, float coneHeight, float coneRadius, bool showNeg = true) 
+        : xAxis(shaftLength, shaftRadius, coneHeight, coneRadius, showNeg)
+        , yAxis(shaftLength, shaftRadius, coneHeight, coneRadius, showNeg)
+        , zAxis(shaftLength, shaftRadius, coneHeight, coneRadius, showNeg)
         {
             xAxis.setModel(glm::rotate(glm::mat4(1.0f), glm::radians(90.0f), glm::vec3(0, 0, -1)));
             yAxis.setModel(glm::mat4(1.0f));

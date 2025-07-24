@@ -209,7 +209,7 @@ void Application::run() {
 
     Cylinder cylinder(0.5f, 5.0f,20);
 
-    Axes axes(false); 
+    Axes axes(10.0f, 0.1f, 0.8f, 0.4f, false); 
 
     Cone cone(1.0f, 5.0f);
 
@@ -232,25 +232,9 @@ void Application::run() {
 
         _mainShader->use();
         _mainShader->setMat4("view", devCamera->getViewMatrix());
-        // cone.draw();
 
-        // cylinder.draw();
 
         axes.draw(_mainShader);
-
-        
-
-
-
-
-        // myCircle.render(*_mainShader, devCamera);
-        // _mainShader->use();
-        // arrayobj.drawArrays(GL_TRIANGLES, 0, 3);
-
-        // _mainShader->use();
-        // _mainShader->setMat4("view", devCamera->getViewMatrix());
-        // arrayobj.drawArrays(GL_TRIANGLES, 0, 3);
-
 
         glfwSwapBuffers(window); // Swap the front and back buffers
         glfwPollEvents();
