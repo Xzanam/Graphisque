@@ -100,3 +100,41 @@ glm::mat4 Camera::getProjectionMatrix() const{
 void Camera::toggleDevCam(){ 
     _devMode = !_devMode;
 }
+
+
+
+glm::mat4 OrbitalCamera::getViewMatrix() const {
+    return glm::lookAt(_position, _target, _worldUp);
+}
+
+
+void OrbitalCamera::update(float deltaX, float deltaY) { 
+
+}
+
+void OrbitalCamera::updateCameraVectors() { 
+    glm::vec3 direction; 
+    direction.x = cos(glm::radians(_pitch)) * sin(glm::radians(_yaw));
+    direction.y = sin(glm::radians(_pitch));
+    direction.z = cos(glm::radians(_pitch)) * cos(glm::radians(_yaw));
+    _position = _target - direction * _distance ;
+}
+
+
+void OrbitalCamera::handleMouseMovement(float xOffset, float yOffset, GLboolean const constraintPitch) { 
+    xOffset *= _mouseSensitivity;
+    yOffset *= _mouseSensitivity;
+
+    _yaw += xOffset;
+    _pitch += yOffset;
+
+
+    if(constraintPitch) { 
+        if(_pitch > 89.0f)
+            _pitch = 89.0f;
+        if(_pitch < -89.0f) 
+            _pitch = -89.0f;
+    }
+    updateCameraVectors();
+
+}

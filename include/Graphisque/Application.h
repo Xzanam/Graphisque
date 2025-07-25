@@ -33,9 +33,11 @@ class Application {
 
         std::shared_ptr<Shader> _mainShader;
         std::shared_ptr<Camera> devCamera;
+        OrbitalCamera orbitCam;
 
         std::shared_ptr<Grid3D> grid3D;
         bool _isCursorHidden;
+        bool _isDevCamEnabled;
 
 
         Cube * cube;

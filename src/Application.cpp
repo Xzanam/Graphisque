@@ -3,7 +3,9 @@
 
 
 Application::Application(const std::string& title , int width , int height) : title(title), 
-WIN_WIDTH(width), WIN_HEIGHT(height), window(nullptr), _lastX(width/2.0f), _lastY(height/2.0f), _isCursorHidden(false) { 
+WIN_WIDTH(width), WIN_HEIGHT(height), window(nullptr), _lastX(width/2.0f), _lastY(height/2.0f), _isCursorHidden(false), 
+_isDevCamEnabled(false) 
+{ 
     std::cout << "Application started with title: " << title 
               << ", width: " << width 
               << ", height: " << height << std::endl; 
@@ -41,6 +43,12 @@ bool Application::init() {
 
 
     devCamera = std::make_shared<Camera>(glm::vec3(0.0f, 0.0f, 3.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+
+
+
+
+
+
     initGrid3D();
 
     // updateProjectionMatrix();
@@ -108,30 +116,30 @@ void Application::initGrid3D() {
 void Application::processInput(float deltaTime) { 
     if (glfwGetKey(this->window, GLFW_KEY_ESCAPE) == GLFW_PRESS) { 
         glfwSetWindowShouldClose(this->window, true); 
+        
     }
-    if(glfwGetKey(this->window, GLFW_KEY_W) == GLFW_PRESS) { 
-        devCamera->handleCameraMovement(FORWARD, deltaTime);
+    if(_isDevCamEnabled) { 
+        if(glfwGetKey(this->window, GLFW_KEY_W) == GLFW_PRESS) { 
+            devCamera->handleCameraMovement(FORWARD, deltaTime);
 
-    } 
-    if(glfwGetKey(this->window, GLFW_KEY_S) == GLFW_PRESS) { 
-        devCamera->handleCameraMovement(BACKWARD, deltaTime);
-    }
-    if(glfwGetKey(this->window, GLFW_KEY_A) == GLFW_PRESS) { 
-        devCamera->handleCameraMovement(LEFT, deltaTime);
-    }
-    if(glfwGetKey(this->window, GLFW_KEY_D) == GLFW_PRESS) { 
-        devCamera->handleCameraMovement(RIGHT, deltaTime);
-    }   
-    if(glfwGetKey(this->window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS) { 
-        devCamera->handleCameraMovement(DOWN, deltaTime);
-    }   
-    if(glfwGetKey(this->window,GLFW_KEY_SPACE ) == GLFW_PRESS) { 
-        devCamera->handleCameraMovement(UP, deltaTime);
-    }   
-    if(glfwGetKey(this->window,GLFW_KEY_H) == GLFW_PRESS) { 
-
-
-
+        } 
+        if(glfwGetKey(this->window, GLFW_KEY_S) == GLFW_PRESS) { 
+            devCamera->handleCameraMovement(BACKWARD, deltaTime);
+        }
+        if(glfwGetKey(this->window, GLFW_KEY_A) == GLFW_PRESS) { 
+            devCamera->handleCameraMovement(LEFT, deltaTime);
+        }
+        if(glfwGetKey(this->window, GLFW_KEY_D) == GLFW_PRESS) { 
+            devCamera->handleCameraMovement(RIGHT, deltaTime);
+        }   
+        if(glfwGetKey(this->window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS) { 
+            devCamera->handleCameraMovement(DOWN, deltaTime);
+        }   
+        if(glfwGetKey(this->window,GLFW_KEY_SPACE ) == GLFW_PRESS) { 
+            devCamera->handleCameraMovement(UP, deltaTime);
+        }   
+        if(glfwGetKey(this->window,GLFW_KEY_H) == GLFW_PRESS) { 
+        }
     }
 
 }
@@ -231,7 +239,7 @@ void Application::run() {
         render(deltaTime);
 
         _mainShader->use();
-        _mainShader->setMat4("view", devCamera->getViewMatrix());
+        _mainShader->setMat4("view",orbitCam.getViewMatrix());
 
 
         axes.draw(_mainShader);
@@ -318,7 +326,12 @@ void Application::cursor_pos_callback(GLFWwindow* window, double xPosIn, double 
     app->_lastX = xpos;
     app->_lastY  = ypos;
 
-    app->devCamera->handleMouseMovement(xOffset, yOffset,GL_TRUE);
+    if(app->_isDevCamEnabled) { 
+        app->devCamera->handleMouseMovement(xOffset, yOffset,GL_TRUE);
+    }
+    else{ 
+        app->orbitCam.handleMouseMovement(xOffset, yOffset, GL_TRUE);
+    }
 
 }
 
