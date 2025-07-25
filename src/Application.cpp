@@ -3,7 +3,7 @@
 
 
 Application::Application(const std::string& title , int width , int height) : title(title), 
-WIN_WIDTH(width), WIN_HEIGHT(height), window(nullptr), _lastX(width/2.0f), _lastY(height/2.0f) { 
+WIN_WIDTH(width), WIN_HEIGHT(height), window(nullptr), _lastX(width/2.0f), _lastY(height/2.0f), _isCursorHidden(false) { 
     std::cout << "Application started with title: " << title 
               << ", width: " << width 
               << ", height: " << height << std::endl; 
@@ -34,7 +34,10 @@ bool Application::init() {
     initShader();
 
     setupCallbacks();
+
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+    _isCursorHidden = true;
+    
 
 
     devCamera = std::make_shared<Camera>(glm::vec3(0.0f, 0.0f, 3.0f), glm::vec3(0.0f, 1.0f, 0.0f));
@@ -45,7 +48,7 @@ bool Application::init() {
 
 
     glViewport(0, 0, WIN_WIDTH, WIN_HEIGHT); // Set the viewport to the window size
-    glClearColor(0.2f, 0.3f, 0.3f, 1.0f); // Set the clear color to a light gray
+    // glClearColor(0.2f, 0.3f, 0.3f, 1.0f); // Set the clear color to a light gray
     _mainShader->use();
     _mainShader->setMat4("model", glm::mat4(1.0f));
 
@@ -108,36 +111,35 @@ void Application::processInput(float deltaTime) {
     }
     if(glfwGetKey(this->window, GLFW_KEY_W) == GLFW_PRESS) { 
         devCamera->handleCameraMovement(FORWARD, deltaTime);
-        _mainShader->setMat4("view", devCamera->getViewMatrix()); 
 
     } 
     if(glfwGetKey(this->window, GLFW_KEY_S) == GLFW_PRESS) { 
         devCamera->handleCameraMovement(BACKWARD, deltaTime);
-        _mainShader->setMat4("view", devCamera->getViewMatrix()); 
     }
     if(glfwGetKey(this->window, GLFW_KEY_A) == GLFW_PRESS) { 
         devCamera->handleCameraMovement(LEFT, deltaTime);
-        _mainShader->setMat4("view", devCamera->getViewMatrix()); 
     }
     if(glfwGetKey(this->window, GLFW_KEY_D) == GLFW_PRESS) { 
         devCamera->handleCameraMovement(RIGHT, deltaTime);
-        _mainShader->setMat4("view", devCamera->getViewMatrix()); 
     }   
     if(glfwGetKey(this->window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS) { 
         devCamera->handleCameraMovement(DOWN, deltaTime);
-        _mainShader->setMat4("view", devCamera->getViewMatrix()); 
     }   
     if(glfwGetKey(this->window,GLFW_KEY_SPACE ) == GLFW_PRESS) { 
         devCamera->handleCameraMovement(UP, deltaTime);
-        _mainShader->setMat4("view", devCamera->getViewMatrix()); 
     }   
+    if(glfwGetKey(this->window,GLFW_KEY_H) == GLFW_PRESS) { 
+
+
+
+    }
 
 }
 
 
 void Application::render(float deltaTime){ 
     // std::cout << "Rendering..." << std::endl;    
-    grid3D->render(*devCamera);
+    // grid3D->render(*devCamera);
 
     // cube->render(*devCamera);
 
@@ -158,22 +160,62 @@ void Application::run() {
         1.0f, 0.0f,0.0f, 
         0.0f, 1.0f, 0.0f
     };
+    
+    float pyramidVertices[] = { 
+        0.0f, 2.0f, 0.0f, //topvertex
+        -1.0f, 0.0f, -1.0f,  // 
+        -1.0f, 0.0f, 1.0f, 
+        1.0f, 0.0f, 1.0f, 
+        1.0f, 0.0f, -1.0f
+    };
+
+    unsigned int indices[] = { 
+        //base of the pyramid
+        1, 2, 3,
+        1, 4, 3, 
+
+        //sides
+        0, 1, 2, 
+        0, 2, 3, 
+        0, 4, 4, 
+        0, 1, 4,
+
+
+    };
 
     VertexBuffer buffer;
     buffer = createVertexBuffer();
-    buffer.setData(vertices, sizeof(vertices));
+    buffer.setData(pyramidVertices, sizeof(pyramidVertices));
     VerteXArray arrayobj;
     arrayobj.addVertexBuffer(buffer, 0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    
+
+    unsigned int EBO;
+    glGenBuffers(1, &EBO);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+
+
 
     glm::mat4 model = glm::mat4(1.0f);
     glm::mat4 projection = glm::perspective(glm::radians(45.0f), float(WIN_WIDTH) / (float) WIN_HEIGHT, 0.1f, 100.0f);
 
+
+
     _mainShader->use();
     _mainShader->setMat4("model", model);
     _mainShader->setMat4("projection", projection);
+    devCamera->setPosition(glm::vec3(0.0f, 0.0f, 30.0f));
 
+    Cylinder cylinder(0.5f, 5.0f,20);
 
+    Axes axes(10.0f, 0.1f, 0.8f, 0.4f, false); 
 
+    Cone cone(1.0f, 5.0f);
+
+    // Circle myCircle(10.0f);
+
+    glPolygonMode(GL_FRONT_AND_BACK , GL_LINE);
 
 
 
@@ -188,10 +230,11 @@ void Application::run() {
 
         render(deltaTime);
 
-        // _mainShader->use();
-        // _mainShader->setMat4("view", devCamera->getViewMatrix());
-        // arrayobj.drawArrays(GL_TRIANGLES, 0, 3);
+        _mainShader->use();
+        _mainShader->setMat4("view", devCamera->getViewMatrix());
 
+
+        axes.draw(_mainShader);
 
         glfwSwapBuffers(window); // Swap the front and back buffers
         glfwPollEvents();
@@ -240,6 +283,7 @@ void Application::updateViewMatrix() {
 void Application::setupCallbacks(){ 
     glfwSetFramebufferSizeCallback(this->window, framebuffer_size_callback);
     glfwSetCursorPosCallback(this->window, cursor_pos_callback);
+    glfwSetKeyCallback(this->window, key_callback);
 }
 
 
@@ -276,4 +320,20 @@ void Application::cursor_pos_callback(GLFWwindow* window, double xPosIn, double 
 
     app->devCamera->handleMouseMovement(xOffset, yOffset,GL_TRUE);
 
+}
+
+
+void Application::key_callback(GLFWwindow* window, int key, int scancode, int action, int mods){ 
+    Application* app = getApplicationPtr(window);
+    if  (key == GLFW_KEY_H && action == GLFW_PRESS) { 
+        if(app-> _isCursorHidden){
+
+            glfwSetInputMode(window,GLFW_CURSOR,GLFW_CURSOR_NORMAL);
+            app-> _isCursorHidden= false;
+        }
+        else{
+            glfwSetInputMode(window,GLFW_CURSOR,GLFW_CURSOR_DISABLED);
+            app-> _isCursorHidden=true;
+        }
+    }
 }

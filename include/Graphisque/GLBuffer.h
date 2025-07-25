@@ -215,6 +215,7 @@ class GLBuffer {
 
 // Convenience typedefs for common buffer types
 using VertexBuffer = GLBuffer;
+using ElemBuffer = GLBuffer;
 using IndexBuffer = GLBuffer;
 using UniformBuffer = GLBuffer;
 using ShaderStorageBuffer = GLBuffer;
