@@ -101,6 +101,21 @@ void Camera::toggleDevCam(){
     _devMode = !_devMode;
 }
 
+OrbitalCamera::OrbitalCamera(glm::vec3 target , float distance, float yaw, float pitch) 
+   : Camera(glm::vec3(20.0f)),  // Position the camera at a distance along x, y , z, 
+          _target(target), _distance(distance)
+    {
+        initYawPitch();
+    }
+
+void OrbitalCamera::initYawPitch() { 
+    glm::vec3 offset = _position - _target;
+    _distance = glm::length(offset);
+    _pitch = glm::degrees(asin(offset.y / _distance));
+    _yaw = glm::degrees(atan2(offset.x, offset.z));
+
+}
+
 
 
 glm::mat4 OrbitalCamera::getViewMatrix() const {
@@ -114,10 +129,12 @@ void OrbitalCamera::update(float deltaX, float deltaY) {
 
 void OrbitalCamera::updateCameraVectors() { 
     glm::vec3 direction; 
+    std::cout<< "Yaw = " << _yaw << std::endl;
+    std::cout<< "Pitch = " << _pitch << std::endl;
     direction.x = cos(glm::radians(_pitch)) * sin(glm::radians(_yaw));
     direction.y = sin(glm::radians(_pitch));
     direction.z = cos(glm::radians(_pitch)) * cos(glm::radians(_yaw));
-    _position = _target - direction * _distance ;
+    _position = _target + direction * _distance ;
 }
 
 

@@ -84,10 +84,8 @@ class OrbitalCamera  : public Camera {
 
 
     public:
-    OrbitalCamera(glm::vec3 target = glm::vec3(0.0f), float distance = 30.0f, float yaw = 0.0f, float pitch = 0.0f)
-        : Camera(glm::vec3(30.0f, 60.0f,distance)),  // Position the camera at a distance along Z
-          _target(target), _distance(distance), _yaw(yaw), _pitch(pitch)
-    {}
+    OrbitalCamera(glm::vec3 target = glm::vec3(0.0f), float distance = 30.0f, float yaw = 0.0f, float pitch = 0.0f);
+     
     glm::vec3 _target= glm::vec3(0.0f);
     float _distance = 30.0f;
     float _yaw = 0.0f;
@@ -96,6 +94,7 @@ class OrbitalCamera  : public Camera {
 
     void handleMouseMovement(float xOffset, float yOffset, GLboolean const constraintPitch) override;
     void update(float deltaX, float deltaY);
+    void initYawPitch();
 
 };
 #endif // CAMERA_H
