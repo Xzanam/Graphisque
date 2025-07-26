@@ -240,8 +240,6 @@ void Application::run() {
 
         _mainShader->use();
         _mainShader->setMat4("view",orbitCam.getViewMatrix());
-
-
         axes.draw(_mainShader);
 
         glfwSwapBuffers(window); // Swap the front and back buffers
