@@ -213,6 +213,7 @@ void Application::run() {
     _mainShader->use();
     _mainShader->setMat4("model", model);
     _mainShader->setMat4("projection", projection);
+
     devCamera->setPosition(glm::vec3(0.0f, 0.0f, 30.0f));
 
     Cylinder cylinder(0.5f, 5.0f,20);
@@ -220,8 +221,6 @@ void Application::run() {
     Axes axes(10.0f, 0.1f, 0.8f, 0.4f, false); 
 
     Cone cone(1.0f, 5.0f);
-
-    // Circle myCircle(10.0f);
 
     glPolygonMode(GL_FRONT_AND_BACK , GL_LINE);
 
@@ -347,4 +346,18 @@ void Application::key_callback(GLFWwindow* window, int key, int scancode, int ac
             app-> _isCursorHidden=true;
         }
     }
+}
+
+void Application::mouseButton_callback(GLFWwindow* window, int button, int action, int mods) { 
+    Application* app = getApplicationPtr(window);
+    if(button == GLFW_MOUSE_BUTTON_LEFT) { 
+        if(action == GLFW_PRESS){ 
+            app->_isDragging =  true;
+            glfwGetCursorPos(window,&app->_lastX, &app->_lastY);
+        }
+        else if (action == GLFW_RELEASE) { 
+            app->_isDragging = false;
+        }
+    }
+
 }

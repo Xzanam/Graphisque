@@ -142,8 +142,8 @@ void OrbitalCamera::handleMouseMovement(float xOffset, float yOffset, GLboolean 
     xOffset *= _mouseSensitivity;
     yOffset *= _mouseSensitivity;
 
-    _yaw += xOffset;
-    _pitch += yOffset;
+    _yaw -= xOffset;
+    _pitch -= yOffset;
 
 
     if(constraintPitch) { 
