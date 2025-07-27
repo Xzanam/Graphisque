@@ -43,6 +43,9 @@ bool Application::init() {
 
 
     devCamera = std::make_shared<Camera>(glm::vec3(0.0f, 0.0f, 3.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+    orbitCamera = std::make_shared<OrbitalCamera>();
+
+    activeCamera = orbitCamera;
 
 
 
@@ -229,7 +232,7 @@ void Application::run() {
     while(!glfwWindowShouldClose(this->window)) { 
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // Clear the color and depth
 
-        //Process input 
+        //Process input
         float currentFrame = static_cast<float>(glfwGetTime());
         deltaTime = currentFrame - lastFrame;
         lastFrame = currentFrame; 
@@ -238,7 +241,7 @@ void Application::run() {
         render(deltaTime);
 
         _mainShader->use();
-        _mainShader->setMat4("view",orbitCam.getViewMatrix());
+        _mainShader->setMat4("view",activeCamera->getViewMatrix());
         axes.draw(_mainShader);
 
         glfwSwapBuffers(window); // Swap the front and back buffers
@@ -287,6 +290,7 @@ void Application::updateViewMatrix() {
 
 void Application::setupCallbacks(){ 
     glfwSetFramebufferSizeCallback(this->window, framebuffer_size_callback);
+    glfwSetMouseButtonCallback(this->window, mouseButton_callback);
     glfwSetCursorPosCallback(this->window, cursor_pos_callback);
     glfwSetKeyCallback(this->window, key_callback);
 }
@@ -305,29 +309,28 @@ void Application::framebuffer_size_callback(GLFWwindow* window, int width, int h
 
 void Application::cursor_pos_callback(GLFWwindow* window, double xPosIn, double yPosIn) { 
     Application * app = Application::getApplicationPtr(window);
+
+
     if(!app ){ 
         std::cerr<< "(cursor_pos_callback) Failed getting window:" << std::endl;
         return;
     }
-    float xpos = static_cast<float>(xPosIn);
-    float ypos = static_cast<float>(yPosIn);
-    if(app->_firstMouse) { 
+
+    if (app-> _isDevCamEnabled || app->_isDragging) {
+        float xpos = static_cast<float>(xPosIn);
+        float ypos = static_cast<float>(yPosIn);
+        if(app->_firstMouse) { 
+            app->_lastX = xpos;
+            app-> _lastY = ypos;
+            app->_firstMouse = false;
+        }
+
+        float xOffset = xpos - app->_lastX;
+        float yOffset = app->_lastY - ypos;
+
         app->_lastX = xpos;
-        app-> _lastY = ypos;
-        app->_firstMouse = false;
-    }
-
-    float xOffset = xpos - app->_lastX;
-    float yOffset = app->_lastY - ypos;
-
-    app->_lastX = xpos;
-    app->_lastY  = ypos;
-
-    if(app->_isDevCamEnabled) { 
-        app->devCamera->handleMouseMovement(xOffset, yOffset,GL_TRUE);
-    }
-    else{ 
-        app->orbitCam.handleMouseMovement(xOffset, yOffset, GL_TRUE);
+        app->_lastY  = ypos;
+        app->activeCamera->handleMouseMovement(xOffset, yOffset, GL_TRUE);
     }
 
 }
@@ -337,13 +340,22 @@ void Application::key_callback(GLFWwindow* window, int key, int scancode, int ac
     Application* app = getApplicationPtr(window);
     if  (key == GLFW_KEY_H && action == GLFW_PRESS) { 
         if(app-> _isCursorHidden){
-
             glfwSetInputMode(window,GLFW_CURSOR,GLFW_CURSOR_NORMAL);
             app-> _isCursorHidden= false;
         }
         else{
             glfwSetInputMode(window,GLFW_CURSOR,GLFW_CURSOR_DISABLED);
             app-> _isCursorHidden=true;
+        }
+    }
+    if (key == GLFW_KEY_C && action == GLFW_PRESS){ 
+        if(app->_isDevCamEnabled){ 
+            app->activeCamera = app->orbitCamera;
+            app-> _isDevCamEnabled = false;
+        }
+        else { 
+            app->activeCamera = app->devCamera;
+            app->_isDevCamEnabled = true;
         }
     }
 }
