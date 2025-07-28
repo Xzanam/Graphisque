@@ -13,7 +13,11 @@ namespace GLOBAL
     const float SPEED = 2.5f;
     const float SENSITIVITY = 0.01f;
     const float ZOOM = 45.0f;
+    extern bool IS_CURSOR_DISABLED;
+
 }
+
+
 
 
 

@@ -342,10 +342,12 @@ void Application::key_callback(GLFWwindow* window, int key, int scancode, int ac
         if(app-> _isCursorHidden){
             glfwSetInputMode(window,GLFW_CURSOR,GLFW_CURSOR_NORMAL);
             app-> _isCursorHidden= false;
+            GLOBAL::IS_CURSOR_DISABLED = false;
         }
         else{
             glfwSetInputMode(window,GLFW_CURSOR,GLFW_CURSOR_DISABLED);
             app-> _isCursorHidden=true;
+            GLOBAL::IS_CURSOR_DISABLED = true;
         }
     }
     if (key == GLFW_KEY_C && action == GLFW_PRESS){ 

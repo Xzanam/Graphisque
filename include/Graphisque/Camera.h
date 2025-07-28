@@ -34,7 +34,7 @@ class Camera {
         glm::vec3 _worldUp;
 
         float _yaw, _pitch; 
-        float _movementSpeed, _mouseSensitivity;
+        
 
 
         
