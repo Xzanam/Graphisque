@@ -6,8 +6,6 @@ Camera::Camera(glm::vec3 position, glm::vec3 up, float yaw, float pitch)
     _right = glm::normalize(glm::cross(_front,_up));
     _lookAt = glm::lookAt(_position, _position + _front, _up);
     _devMode = false;
-    _movementSpeed = GLOBAL::SPEED;
-    _mouseSensitivity = GLOBAL::SENSITIVITY;
 }   
 
 
@@ -55,8 +53,9 @@ void Camera::handleCameraMovement(CameraMovement direction, float deltaTime) {
 
 
 void Camera::handleMouseMovement(float xOffset, float yOffset, GLboolean const constraintPitch) { 
-    xOffset *= _mouseSensitivity;
-    yOffset *= _mouseSensitivity;
+    float sensitivity = GLOBAL::IS_CURSOR_DISABLED ? 0.1f : 0.5f;
+    xOffset *= sensitivity;
+    yOffset *= sensitivity;
 
     _yaw += xOffset;
     _pitch += yOffset;
@@ -68,7 +67,7 @@ void Camera::handleMouseMovement(float xOffset, float yOffset, GLboolean const c
         if(_pitch < -89.0f) 
             _pitch = -89.0f;
     }
-    updateCameraVectors();
+    this->updateCameraVectors();
 
 }
 
@@ -99,4 +98,59 @@ glm::mat4 Camera::getProjectionMatrix() const{
 
 void Camera::toggleDevCam(){ 
     _devMode = !_devMode;
+}
+
+OrbitalCamera::OrbitalCamera(glm::vec3 target , float distance, float yaw, float pitch) 
+   : Camera(glm::vec3(20.0f)),  // Position the camera at a distance along x, y , z, 
+          _target(target), _distance(distance)
+    {
+        initYawPitch();
+    }
+
+void OrbitalCamera::initYawPitch() { 
+    glm::vec3 offset = _position - _target;
+    _distance = glm::length(offset);
+    _pitch = glm::degrees(asin(offset.y / _distance));
+    _yaw = glm::degrees(atan2(offset.x, offset.z));
+
+}
+
+
+
+glm::mat4 OrbitalCamera::getViewMatrix() const {
+    return glm::lookAt(_position, _target, _worldUp);
+}
+
+
+void OrbitalCamera::update(float deltaX, float deltaY) { 
+
+}
+
+void OrbitalCamera::updateCameraVectors() { 
+    glm::vec3 direction; 
+    std::cout<< "Yaw = " << _yaw << std::endl;
+    std::cout<< "Pitch = " << _pitch << std::endl;
+    direction.x = cos(glm::radians(_pitch)) * sin(glm::radians(_yaw));
+    direction.y = sin(glm::radians(_pitch));
+    direction.z = cos(glm::radians(_pitch)) * cos(glm::radians(_yaw));
+    _position = _target + direction * _distance ;
+}
+
+
+void OrbitalCamera::handleMouseMovement(float xOffset, float yOffset, GLboolean const constraintPitch) { 
+    float sensitivity = GLOBAL::IS_CURSOR_DISABLED ? 0.1f : 0.5f;
+    xOffset *= sensitivity;
+    yOffset *= sensitivity;
+    _yaw -= xOffset;
+    _pitch -= yOffset;
+
+
+    if(constraintPitch) { 
+        if(_pitch > 89.0f)
+            _pitch = 89.0f;
+        if(_pitch < -89.0f) 
+            _pitch = -89.0f;
+    }
+    updateCameraVectors();
+
 }

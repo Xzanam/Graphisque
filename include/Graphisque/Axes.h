@@ -13,15 +13,28 @@
 
 
 
-
-class Cone{ 
-    private: 
+class Shape { 
+    protected:  
         std::unique_ptr<VerteXArray> _vao;
         std::unique_ptr<VertexBuffer> _vbo;
         std::unique_ptr<ElemBuffer> _ebo;
         std::vector<glm::vec3> _vertices;
         std::vector<int> _indices;
 
+    public: 
+        Shape() { 
+            _vao = std::make_unique<VerteXArray>();
+            _vbo = std::make_unique<VertexBuffer>();
+            _ebo = std::make_unique<ElemBuffer>(GL_ELEMENT_ARRAY_BUFFER);
+        } 
+        virtual ~Shape() = default; 
+        virtual void draw()  = 0 ;
+
+};
+
+
+class Cone : public Shape{ 
+    private: 
         float _r, _h;
         int _seg;
         glm::vec3 _center;
@@ -54,10 +67,7 @@ class Cone{
 
         }
     public:
-        Cone(float radius, float height, int segments = 360) : _seg(segments), _r(radius), _h(height), _center(glm::vec3(0.0f, 0.0f, 0.0f)){
-            _vao = std::make_unique<VerteXArray>();
-            _vbo = std::make_unique<VertexBuffer>();
-            _ebo = std::make_unique<ElemBuffer>(GL_ELEMENT_ARRAY_BUFFER);
+        Cone(float radius, float height, int segments = 360) : Shape(),  _seg(segments), _r(radius), _h(height), _center(glm::vec3(0.0f, 0.0f, 0.0f)){
             initBuffers();
         }
 
@@ -71,7 +81,7 @@ class Cone{
             _vao->unbind();
         }
 
-        void draw(){ 
+        void draw() override{   
             _vao->drawElements(GL_TRIANGLES,_indices.size(), GL_UNSIGNED_INT, 0);
         }
 
@@ -79,16 +89,8 @@ class Cone{
 
 
 
-class Cylinder{ 
+class Cylinder : public Shape{ 
     private: 
-        std::unique_ptr<VerteXArray> _vao;
-        std::unique_ptr<VertexBuffer> _vbo;
-        std::unique_ptr<ElemBuffer> _ebo;
-
-        std::vector<glm::vec3> _vertices;
-
-        std::vector<int> _indices;
-
         float _r, _h;
         int _seg;
         void genVertices(){
@@ -146,13 +148,10 @@ class Cylinder{
 
 
     public: 
-        Cylinder() = default;
+        Cylinder():Shape() { }
         ~Cylinder() = default;
         Cylinder(float radius,float height, int segments = 360)
-            : _r(radius), _h(height), _seg(segments) { 
-            _vao = std::make_unique<VerteXArray>();
-            _vbo = std::make_unique<VertexBuffer>();
-            _ebo = std::make_unique<ElemBuffer>(GL_ELEMENT_ARRAY_BUFFER);
+            :Shape(),  _r(radius), _h(height), _seg(segments) { 
             initBuffers();
         } 
 
@@ -166,16 +165,12 @@ class Cylinder{
             _vao->unbind();
         }
 
-        void draw(){ 
+        void draw() override{ 
             _vao->drawElements(GL_TRIANGLES,_indices.size(), GL_UNSIGNED_INT, 0);
         }
-
         float getHeight() { 
             return this-> _h;
         }
-
-
-
 
 };
 
@@ -186,18 +181,23 @@ class Axis{
         Cone _arrow;
         glm::mat4 _model;
         bool _drawNegative;
+        glm::vec3 _color;
 
     public: 
         Axis(float shaftLength = 20.0f, float shaftRadius = 0.2f, float coneHeight = 2.0f, float coneRadius = 0.8f, bool drawNeg = true) 
-        : _shaft(shaftRadius, shaftLength), _arrow(coneRadius, coneHeight) , _drawNegative(drawNeg)
+        : _shaft(shaftRadius, shaftLength), _arrow(coneRadius, coneHeight) ,_color(glm::vec3(0.8f, 0.8f, 0.8f)), _drawNegative(drawNeg)
         { 
             _model = glm::mat4(1.0f);
         }
 
         void setModel(const glm::mat4& m) { _model = m;}
+        void setColor(glm::vec3& color) { 
+            _color = color;
+        }
 
         void draw(const std::shared_ptr<Shader>& shader) { 
             shader-> use();
+            shader->setVec3("objectColor", _color);
             shader->setMat4("model", _model);
             _shaft.draw();
 
@@ -223,6 +223,9 @@ class Axis{
 class Axes { 
     private: 
         Axis xAxis , yAxis, zAxis;
+        glm::vec3 xAxisColor = glm::vec3(1.0f, 0.0f, 0.0f);
+        glm::vec3 yAxisColor = glm::vec3(0.0f, 1.0f, 0.0f);
+        glm::vec3 zAxisColor = glm::vec3(0.0f, 0.0f, 1.0f);
 
 
     public: 
@@ -234,6 +237,35 @@ class Axes {
             xAxis.setModel(glm::rotate(glm::mat4(1.0f), glm::radians(90.0f), glm::vec3(0, 0, -1)));
             yAxis.setModel(glm::mat4(1.0f));
             zAxis.setModel(glm::rotate(glm::mat4(1.0f), glm::radians(90.0f), glm::vec3(1, 0, 0))); //camera convention might have an effect here
+            xAxis.setColor(xAxisColor);
+            yAxis.setColor(yAxisColor);
+            zAxis.setColor(zAxisColor);
+        }
+
+        void setAxisColor(char axis, glm::vec3& color) { 
+            switch (axis) { 
+                case 'x': 
+                case 'X':
+                    this->xAxisColor = color;
+                    xAxis.setColor(xAxisColor);
+                    break;
+                case 'y': 
+                case 'Y':
+                    this->yAxisColor = color;
+                    yAxis.setColor(yAxisColor);
+                    break;
+                case 'z': 
+                case 'Z':
+                    this->zAxisColor = color;
+                    zAxis.setColor(zAxisColor);
+                    break;
+                default: 
+                    std::cerr << "Error Setting color, specify a valid axis /x/y/z" <<std::endl;
+                    break;
+            }
+                
+
+
         }
 
         void draw(const std::shared_ptr<Shader>& shader) { 

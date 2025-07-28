@@ -3,3 +3,6 @@
 const int G_WinWidth = 800;  // Default window width
 const int G_WinHeight = 600; // Default window height
 
+namespace GLOBAL { 
+    bool IS_CURSOR_DISABLED = true;
+}

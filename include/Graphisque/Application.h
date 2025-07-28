@@ -33,9 +33,14 @@ class Application {
 
         std::shared_ptr<Shader> _mainShader;
         std::shared_ptr<Camera> devCamera;
+        std::shared_ptr<Camera> activeCamera;
+        std::shared_ptr<OrbitalCamera> orbitCamera;
 
         std::shared_ptr<Grid3D> grid3D;
         bool _isCursorHidden;
+        bool _isDevCamEnabled;
+
+        bool _isDragging = false;
 
 
         Cube * cube;
@@ -45,7 +50,7 @@ class Application {
     
     public: 
 
-        float _lastX, _lastY; 
+        double _lastX, _lastY; 
         bool _firstMouse =true;
         Application(const std::string& title = "Default", int width = G_WinWidth, int height=G_WinHeight);
         bool init(); 
@@ -71,6 +76,7 @@ class Application {
         static void framebuffer_size_callback(GLFWwindow* window, int width, int height) ;
         static void cursor_pos_callback(GLFWwindow* window, double xPosIn, double yPosIn) ;
         static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
+        static void mouseButton_callback(GLFWwindow* window, int button, int action, int mods);
 
 
         ~Application() ;
