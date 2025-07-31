@@ -2,7 +2,7 @@
 
 
 int main() { 
-    Application app("2D Grapher"); 
+    Application app("Grapher");
     app.init();
     app.run(); 
     return 0;

@@ -1,10 +1,11 @@
 #include "Application.h"
 
+#include "Equations.h"
 
 
 Application::Application(const std::string& title , int width , int height) : title(title), 
-WIN_WIDTH(width), WIN_HEIGHT(height), window(nullptr), _lastX(width/2.0f), _lastY(height/2.0f), _isCursorHidden(false), 
-_isDevCamEnabled(false) 
+                                                                              WIN_WIDTH(width), WIN_HEIGHT(height), window(nullptr), _lastX(width/2.0f), _lastY(height/2.0f), _isCursorHidden(false),
+                                                                              _isDevCamEnabled(false)
 { 
     std::cout << "Application started with title: " << title 
               << ", width: " << width 
@@ -27,7 +28,7 @@ bool Application::init() {
 
 
     //Load OpenGL functions using GLAD
-    if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) { 
+    if (!gladLoadGLLoader(reinterpret_cast<GLADloadproc> (glfwGetProcAddress))) {
         std::cerr << "Failed to initialize GLAD!" << std::endl; 
         return false; 
     } 
@@ -40,8 +41,6 @@ bool Application::init() {
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
     _isCursorHidden = true;
     
-
-
     devCamera = std::make_shared<Camera>(glm::vec3(0.0f, 0.0f, 3.0f), glm::vec3(0.0f, 1.0f, 0.0f));
     orbitCamera = std::make_shared<OrbitalCamera>();
 
@@ -219,14 +218,11 @@ void Application::run() {
 
     devCamera->setPosition(glm::vec3(0.0f, 0.0f, 30.0f));
 
-    Cylinder cylinder(0.5f, 5.0f,20);
 
-    Axes axes(10.0f, 0.1f, 0.8f, 0.4f, false); 
+    Axes axes(10.0f, 0.1f, 0.8f, 0.4f,true);
 
-    Cone cone(1.0f, 5.0f);
-
+    Equation myEq;
     glPolygonMode(GL_FRONT_AND_BACK , GL_LINE);
-
 
 
     while(!glfwWindowShouldClose(this->window)) { 
@@ -243,6 +239,7 @@ void Application::run() {
         _mainShader->use();
         _mainShader->setMat4("view",activeCamera->getViewMatrix());
         axes.draw(_mainShader);
+        myEq.draw(_mainShader);
 
         glfwSwapBuffers(window); // Swap the front and back buffers
         glfwPollEvents();
@@ -274,7 +271,7 @@ void Application::updateProjectionMatrix() {
 }
 
 
-void Application::updateViewMatrix() { 
+void Application::updateViewMatrix()  const{
     // Update the view matrix if needed
     // This can be used to set camera position, orientation, etc.
     // For now, we will just print the current projection matrix
