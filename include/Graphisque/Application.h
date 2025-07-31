@@ -65,7 +65,7 @@ class Application {
 
         //update projection matrix
         void updateProjectionMatrix();
-        void updateViewMatrix() ;
+        void updateViewMatrix() const ;
         void processCameraMovement(float deltaTime);
         
      
