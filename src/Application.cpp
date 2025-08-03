@@ -1,10 +1,12 @@
 #include "Application.h"
 
+#include "Equations.h"
+
 
 
 Application::Application(const std::string& title , int width , int height) : title(title), 
-WIN_WIDTH(width), WIN_HEIGHT(height), window(nullptr), _lastX(width/2.0f), _lastY(height/2.0f), _isCursorHidden(false), 
-_isDevCamEnabled(false) 
+                                                                              WIN_WIDTH(width), WIN_HEIGHT(height), window(nullptr), _lastX(width/2.0f), _lastY(height/2.0f), _isCursorHidden(false),
+                                                                              _isDevCamEnabled(false)
 { 
     std::cout << "Application started with title: " << title 
               << ", width: " << width 
@@ -17,31 +19,23 @@ Application* Application::getApplicationPtr(GLFWwindow* window) {
 
 bool Application::init() { 
 
-
     //Initialize GLFW and create a window
     std::cout << "Initializing application..." << std::endl; 
-
     initGLFW();
-
-    glfwMakeContextCurrent(this->window); 
-
-
     //Load OpenGL functions using GLAD
-    if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) { 
+    if (!gladLoadGLLoader(reinterpret_cast<GLADloadproc> (glfwGetProcAddress))) {
         std::cerr << "Failed to initialize GLAD!" << std::endl; 
         return false; 
     } 
 
+    glViewport(0, 0, WIN_WIDTH, WIN_HEIGHT); // Set the viewport to the window size
     glEnable(GL_DEPTH_TEST); // Enable depth testing for 3D rendering
     initShader();
-
     setupCallbacks();
+    initImgui();
 
-    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
     _isCursorHidden = true;
     
-
-
     devCamera = std::make_shared<Camera>(glm::vec3(0.0f, 0.0f, 3.0f), glm::vec3(0.0f, 1.0f, 0.0f));
     orbitCamera = std::make_shared<OrbitalCamera>();
 
@@ -54,19 +48,11 @@ bool Application::init() {
 
     initGrid3D();
 
-    // updateProjectionMatrix();
-    // updateViewMatrix();
 
 
-    glViewport(0, 0, WIN_WIDTH, WIN_HEIGHT); // Set the viewport to the window size
-    // glClearColor(0.2f, 0.3f, 0.3f, 1.0f); // Set the clear color to a light gray
     _mainShader->use();
     _mainShader->setMat4("model", glm::mat4(1.0f));
 
-
-    // cube = new Cube();
-    // cube->setShader(_mainShader);
-    // cube->setPosition(glm::vec3(0.0f));
 
 
     return true; 
@@ -76,27 +62,24 @@ bool Application::initGLFW() {
     if (!glfwInit()) { 
         std::cerr << "Failed to initialize GLFW!" << std::endl; 
         return false; 
-    } 
-
+    }
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE,GLFW_OPENGL_CORE_PROFILE);
-
     glfwWindowHint(GLFW_SAMPLES, 4);
 
     //create window
     this->window = glfwCreateWindow(WIN_WIDTH, WIN_HEIGHT, title.c_str(), nullptr, nullptr); 
-
-    if(this->window == nullptr) { 
+    if(this->window == nullptr) {
         std::cerr << "Failed to create GLFW window!" << std::endl; 
         glfwTerminate(); 
         return false; 
     }
     std::cout<< "GLFW initialized and window created successfully!" << std::endl;
-
     glfwSetWindowUserPointer(window , this);
-
-    return true; 
+    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+    glfwMakeContextCurrent(this->window);
+    return true;
 }
 
 bool Application::initShader() { 
@@ -115,7 +98,15 @@ void Application::initGrid3D() {
     GridConfig config;
     grid3D = std::make_shared<Grid3D>(config, _mainShader);
 }
- 
+
+bool Application::initImgui() {
+    ImGui::CreateContext();
+    ImGui_ImplGlfw_InitForOpenGL(window, true);
+    return true;
+}
+
+
+
 void Application::processInput(float deltaTime) { 
     if (glfwGetKey(this->window, GLFW_KEY_ESCAPE) == GLFW_PRESS) { 
         glfwSetWindowShouldClose(this->window, true); 
@@ -219,14 +210,11 @@ void Application::run() {
 
     devCamera->setPosition(glm::vec3(0.0f, 0.0f, 30.0f));
 
-    Cylinder cylinder(0.5f, 5.0f,20);
 
-    Axes axes(10.0f, 0.1f, 0.8f, 0.4f, false); 
+    Axes axes(10.0f, 0.1f, 0.8f, 0.4f,true);
 
-    Cone cone(1.0f, 5.0f);
-
+    Equation myEq;
     glPolygonMode(GL_FRONT_AND_BACK , GL_LINE);
-
 
 
     while(!glfwWindowShouldClose(this->window)) { 
@@ -243,10 +231,13 @@ void Application::run() {
         _mainShader->use();
         _mainShader->setMat4("view",activeCamera->getViewMatrix());
         axes.draw(_mainShader);
+        myEq.draw(_mainShader);
 
-        glfwSwapBuffers(window); // Swap the front and back buffers
+
+
         glfwPollEvents();
-    } 
+        glfwSwapBuffers(window); // Swap the front and back buffers
+    }
 }
 
 
@@ -274,7 +265,7 @@ void Application::updateProjectionMatrix() {
 }
 
 
-void Application::updateViewMatrix() { 
+void Application::updateViewMatrix()  const{
     // Update the view matrix if needed
     // This can be used to set camera position, orientation, etc.
     // For now, we will just print the current projection matrix
