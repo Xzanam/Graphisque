@@ -1,9 +1,13 @@
 #ifndef GLOBALS_H
 #define GLOBALS_H
+#include <memory>
+#include "Shader.h"
 
 extern const int G_WinWidth;  // Default window width
 
 extern const int G_WinHeight; // Default window height
+
+using SharedPtr = std::shared_ptr<Shader>;
 
 
 namespace GLOBAL
