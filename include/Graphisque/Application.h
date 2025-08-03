@@ -1,7 +1,10 @@
 #ifndef APPLICATION_H
 #define APPLICATION_H
 
-#include <iostream> 
+#include "imgui/imgui.h"
+#include "imgui/imgui_impl_glfw.h"
+#include "imgui/imgui_impl_opengl3.h"
+#include <iostream>
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include <memory>
@@ -57,6 +60,7 @@ class Application {
         bool initGLFW();
         bool initShader();
         void initGrid3D();
+        bool initImgui();
         void processInput(float deltaTime);
 
         void render(float deltaTime);
@@ -67,7 +71,9 @@ class Application {
         void updateProjectionMatrix();
         void updateViewMatrix() const ;
         void processCameraMovement(float deltaTime);
-        
+
+
+
      
 
 

@@ -4,21 +4,18 @@
 #ifndef EQUATIONS_H
 #define EQUATIONS_H
 
-#include <glm/glm.hpp>
 #include <cmath>
 #include<vector>
-#include "Buffer.h"
 #include "Shader.h"
 
 
-float f (float x, float y) {
-    return sinf(x) * sinf(y);
+inline double f (float x, float y) {
+    return (sin(x) * sin(x) + cos(y) * cos(y));
 }
 
-float sphereEqn(float x, float y) {
+inline float sphereEqn(float x, float y) {
     return sqrt(25 - x*x - y*y);
 }
-
 
 const float lim = 5.0f;
 class Equation {
@@ -49,14 +46,12 @@ public:
         _vbo->setData(graphPoints);
         _vao->addVertexBuffer(*_vbo, 0, 3, GL_FLOAT);
     }
-    void draw(std::shared_ptr<Shader>& shader) {
+    void draw(const std::shared_ptr<Shader>& shader) {
         shader->setMat4("model", glm::mat4(1.0f));
         shader->setVec3("objectColor", color);
         glPointSize(3.0f);
         _vao->drawArrays(GL_POINTS, 0, graphPoints.size());
     }
-
-
 
 };
 
