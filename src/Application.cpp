@@ -27,35 +27,21 @@ bool Application::init() {
         std::cerr << "Failed to initialize GLAD!" << std::endl; 
         return false; 
     } 
-
     glViewport(0, 0, WIN_WIDTH, WIN_HEIGHT); // Set the viewport to the window size
     glEnable(GL_DEPTH_TEST); // Enable depth testing for 3D rendering
-    initShader();
-    setupCallbacks();
-    initImgui();
-
     _isCursorHidden = true;
-    
     devCamera = std::make_shared<Camera>(glm::vec3(0.0f, 0.0f, 3.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+    devCamera->setPosition(glm::vec3(0.0f, 0.0f, 30.0f));
     orbitCamera = std::make_shared<OrbitalCamera>();
 
     activeCamera = orbitCamera;
 
-
-
-
-
-
+    initShader();
+    setupCallbacks();
+    initImgui();
+    std::cout << "Application initialized!" << std::endl;
     initGrid3D();
-
-
-
-    _mainShader->use();
-    _mainShader->setMat4("model", glm::mat4(1.0f));
-
-
-
-    return true; 
+    return true;
 }
 
 bool Application::initGLFW() {
@@ -85,7 +71,12 @@ bool Application::initGLFW() {
 bool Application::initShader() { 
     try {
         _mainShader = std::make_shared<Shader>("./shaders/vertex.vert", "./shaders/fragment.frag");
+        glm::mat4 projection = glm::perspective(glm::radians(45.0f),  (float) WIN_WIDTH /  WIN_HEIGHT, 0.1f, 100.0f);
+        _mainShader->use();
+        _mainShader->setMat4("model", glm::mat4(1.0f));
+        _mainShader->setMat4("projection", projection);
         std::cout << "Shader initialized successfully!" << std::endl;
+
         return true;
     } catch (const std::exception& e) {
         std::cerr << "Failed to initialize shader: " << e.what() << std::endl;
@@ -95,8 +86,11 @@ bool Application::initShader() {
 }
 
 void Application::initGrid3D() { 
-    GridConfig config;
-    grid3D = std::make_shared<Grid3D>(config, _mainShader);
+    // GridConfig config;
+    // grid3D = std::make_shared<Grid3D>(config, _mainShader);
+
+    axes = std::make_unique<Axes>(10.0f, 0.1f, 0.8f, 0.4f,true);
+    equation= std::make_unique<Equation>();
 }
 
 bool Application::initImgui() {
@@ -142,8 +136,9 @@ void Application::processInput(float deltaTime) {
 void Application::render(float deltaTime){ 
     // std::cout << "Rendering..." << std::endl;    
     // grid3D->render(*devCamera);
-
     // cube->render(*devCamera);
+    axes->draw(_mainShader);
+    equation->draw(_mainShader);
 
 }
 
@@ -154,70 +149,9 @@ void Application::run() {
     glEnable(GL_LINE_SMOOTH);
     glHint(GL_LINE_SMOOTH_HINT, GL_NICEST);
 
- 
     lastFrame = static_cast<float>(glfwGetTime());
-
-    float vertices[] = { 
-        -1.0f, 0.0f,0.0f, 
-        1.0f, 0.0f,0.0f, 
-        0.0f, 1.0f, 0.0f
-    };
-    
-    float pyramidVertices[] = { 
-        0.0f, 2.0f, 0.0f, //topvertex
-        -1.0f, 0.0f, -1.0f,  // 
-        -1.0f, 0.0f, 1.0f, 
-        1.0f, 0.0f, 1.0f, 
-        1.0f, 0.0f, -1.0f
-    };
-
-    unsigned int indices[] = { 
-        //base of the pyramid
-        1, 2, 3,
-        1, 4, 3, 
-
-        //sides
-        0, 1, 2, 
-        0, 2, 3, 
-        0, 4, 4, 
-        0, 1, 4,
-
-
-    };
-
-    VertexBuffer buffer;
-    buffer = createVertexBuffer();
-    buffer.setData(pyramidVertices, sizeof(pyramidVertices));
-    VerteXArray arrayobj;
-    arrayobj.addVertexBuffer(buffer, 0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-    
-
-    unsigned int EBO;
-    glGenBuffers(1, &EBO);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
-
-
-
-    glm::mat4 model = glm::mat4(1.0f);
-    glm::mat4 projection = glm::perspective(glm::radians(45.0f), float(WIN_WIDTH) / (float) WIN_HEIGHT, 0.1f, 100.0f);
-
-
-
-    _mainShader->use();
-    _mainShader->setMat4("model", model);
-    _mainShader->setMat4("projection", projection);
-
-    devCamera->setPosition(glm::vec3(0.0f, 0.0f, 30.0f));
-
-
-    Axes axes(10.0f, 0.1f, 0.8f, 0.4f,true);
-
-    Equation myEq;
     glPolygonMode(GL_FRONT_AND_BACK , GL_LINE);
-
-
-    while(!glfwWindowShouldClose(this->window)) { 
+    while(!glfwWindowShouldClose(this->window)) {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // Clear the color and depth
 
         //Process input
@@ -226,13 +160,9 @@ void Application::run() {
         lastFrame = currentFrame; 
         processInput(deltaTime);
 
-        render(deltaTime);
-
         _mainShader->use();
         _mainShader->setMat4("view",activeCamera->getViewMatrix());
-        axes.draw(_mainShader);
-        myEq.draw(_mainShader);
-
+        render(deltaTime);
 
 
         glfwPollEvents();

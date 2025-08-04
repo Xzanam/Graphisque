@@ -19,8 +19,7 @@
 #include "Grid3D.h"
 #include "Cube.h"
 #include "Axes.h"
-
-
+#include "Equations.h"
 
 
 class Application { 
@@ -44,6 +43,9 @@ class Application {
         bool _isDevCamEnabled;
 
         bool _isDragging = false;
+
+        std::unique_ptr<Axes> axes;
+        std::unique_ptr<Equation> equation;
 
 
         Cube * cube;
