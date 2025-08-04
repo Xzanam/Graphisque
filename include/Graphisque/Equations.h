@@ -9,8 +9,8 @@
 #include "Shader.h"
 
 
-inline double f (float x, float y) {
-    return (sin(x) * sin(x) + cos(y) * cos(y));
+inline float f (float x, float y) {
+    return sinf(x) * tanf(y);
 }
 
 inline float sphereEqn(float x, float y) {
