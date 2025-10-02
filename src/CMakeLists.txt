@@ -1,8 +1,6 @@
 #add executable
 
 include_directories(${INCLUDE_DIR})
-include_directories(${INCLUDE_DIR}/Graphisque)
-include_directories(${INCLUDE_DIR}/imgui)
 
 
 
