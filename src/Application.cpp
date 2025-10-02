@@ -138,7 +138,7 @@ void Application::render(float deltaTime){
     // grid3D->render(*devCamera);
     // cube->render(*devCamera);
     axes->draw(_mainShader);
-    equation->draw(_mainShader);
+    //equation->draw(_mainShader);
 
 }
 
@@ -151,6 +151,21 @@ void Application::run() {
 
     lastFrame = static_cast<float>(glfwGetTime());
     glPolygonMode(GL_FRONT_AND_BACK , GL_LINE);
+
+    std::vector<glm::vec3> vertices;
+    vertices.push_back(glm::vec3(1,1, 1));
+    //vertices.push_back(glm::vec3(5,4, 3));
+    //vertices.push_back(glm::vec3(5-1,3, 2));
+
+
+    VertexBuffer vbo =  createVertexBuffer();
+    VerteXArray vao ;
+
+
+    vbo.setData(vertices.data(), vertices.size() * sizeof(glm::vec3));
+    vao.addVertexBuffer(vbo, 0, 3, GL_FLOAT);
+
+
     while(!glfwWindowShouldClose(this->window)) {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // Clear the color and depth
 
@@ -162,7 +177,13 @@ void Application::run() {
 
         _mainShader->use();
         _mainShader->setMat4("view",activeCamera->getViewMatrix());
+
+        glPointSize(3.0f);
+        vao.drawArrays(GL_POINTS, 0, 1 );
         render(deltaTime);
+
+
+
 
 
         glfwPollEvents();

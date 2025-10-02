@@ -10,7 +10,7 @@
 
 
 inline float f (float x, float y) {
-    return sinf(x) * tanf(y);
+    return (sinf(x) * cosf(y))/ (x*x + y*y);
 }
 
 inline float sphereEqn(float x, float y) {
@@ -24,7 +24,7 @@ class Equation {
     float xMax = lim;
     float yMin = -lim;
     float yMax = lim;
-    float step  = 0.25f;
+    float step  = 0.025f;
     std::unique_ptr<VertexBuffer> _vbo;
     std::unique_ptr<VerteXArray> _vao;
     glm::vec3 color = glm::vec3(0.4f, 0.1f, 0.6f);
