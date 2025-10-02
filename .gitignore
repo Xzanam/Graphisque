@@ -2,6 +2,7 @@
 build/
 .vscode/
 .idea/
+.deps/
 *.d
 
 # Compiled Object files

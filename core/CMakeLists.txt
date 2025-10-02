@@ -1,8 +1,10 @@
 set(SRC_DIR src/)
-set(INCLUDE_DIR include/)
+set(INCLUDE_DIR include)
+list(APPEND INCLUDE_DIR include/core)
+list(APPEND INCLUDE_DIR include/core/Renderer)
 
 file(GLOB_RECURSE CORE_SOURCES ${SRC_DIR}/*.cpp )
-file(GLOB_RECURSE CORE_HEADERS ${INCLUDE_DIR}/core/*.h)
+file(GLOB_RECURSE CORE_HEADERS ${INCLUDE_DIR}/*.h)
 
 
 add_library(core STATIC )

@@ -1,8 +1,6 @@
 #
 # Dependencies
 #
-# Put this *before* including any FetchContent_Declare
-set(FETCHCONTENT_BASE_DIR "${CMAKE_SOURCE_DIR}/.deps" CACHE PATH "Dependency download directory")
 
 include(FetchContent)
 
@@ -36,7 +34,6 @@ FetchContent_Declare(
 
 FetchContent_GetProperties(glad)
 if(NOT glad_POPULATED)
-    set(FETCHCONTENT_QUIET NO)
     FetchContent_Populate(glad)
     add_subdirectory("${glad_SOURCE_DIR}/cmake" glad_cmake)
     glad_add_library(glad REPRODUCIBLE EXCLUDE_FROM_ALL LOADER API gl:core=4.6)
@@ -57,4 +54,6 @@ if (NOT glm_FOUND)
         FetchContent_MakeAvailable(glm)
     endif()
 endif()
-set_target_properties(glm PROPERTIES FOLDER "Dependencies")
+
+#needed for Visual Studio Folder Structure
+#set_target_properties(glm PROPERTIES FOLDER "Dependencies")
