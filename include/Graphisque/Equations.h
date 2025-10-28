@@ -10,21 +10,21 @@
 
 
 inline float f (float x, float y) {
-    return (sinf(x) * cosf(y))/ (x*x + y*y);
+    return (sinf(x) * sinf(y));
 }
 
 inline float sphereEqn(float x, float y) {
     return sqrt(25 - x*x - y*y);
 }
 
-const float lim = 5.0f;
+const float lim = 10.0f;
 class Equation {
     std::vector<glm::vec3> graphPoints;
     float xMin = -lim;
     float xMax = lim;
     float yMin = -lim;
     float yMax = lim;
-    float step  = 0.025f;
+    float step  = 0.5f;
     std::unique_ptr<VertexBuffer> _vbo;
     std::unique_ptr<VerteXArray> _vao;
     glm::vec3 color = glm::vec3(0.4f, 0.1f, 0.6f);

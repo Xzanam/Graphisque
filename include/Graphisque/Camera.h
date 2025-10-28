@@ -35,17 +35,15 @@ class Camera {
 
         float _yaw, _pitch; 
         
+        float _yawVelocity;
+        float _pitchVelocity;
 
-
-        
         bool _devMode;
- 
         float _cameraSpeed = 2.5f;
 
         glm::mat4 projectionMatrix;
-
         virtual void updateCameraVectors() ;
-
+        bool isDragging = false;
     public:
 
 
@@ -56,12 +54,14 @@ class Camera {
             
         void setProjectionMatrix(glm::mat4 projection) ;
 
+        void setDragging(bool isDragging);
         virtual glm::mat4 getViewMatrix() const ;
         glm::mat4 getProjectionMatrix() const;
 
         void handleCameraMovement(CameraMovement direction, float deltaTime);
         virtual void handleMouseMovement(float xOffset, float yOffset, GLboolean const constraintPitch);
 
+        virtual void  update(float deltaTime);
         void setPosition(const glm::vec3& position) ;
         void printPosition();
         void toggleDevCam();
@@ -90,10 +90,10 @@ class OrbitalCamera  : public Camera {
     float _distance = 30.0f;
     float _yaw = 0.0f;
     float _pitch = 0.0f;
-    glm::mat4 getViewMatrix() const override;
 
+    glm::mat4 getViewMatrix() const override;
     void handleMouseMovement(float xOffset, float yOffset, GLboolean const constraintPitch) override;
-    void update(float deltaX, float deltaY);
+    void update(float deltaTime) override;
     void initYawPitch();
 
 };

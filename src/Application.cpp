@@ -30,17 +30,18 @@ bool Application::init() {
     glViewport(0, 0, WIN_WIDTH, WIN_HEIGHT); // Set the viewport to the window size
     glEnable(GL_DEPTH_TEST); // Enable depth testing for 3D rendering
     _isCursorHidden = true;
+
     devCamera = std::make_shared<Camera>(glm::vec3(0.0f, 0.0f, 3.0f), glm::vec3(0.0f, 1.0f, 0.0f));
     devCamera->setPosition(glm::vec3(0.0f, 0.0f, 30.0f));
+
     orbitCamera = std::make_shared<OrbitalCamera>();
 
     activeCamera = orbitCamera;
-
     initShader();
     setupCallbacks();
     initImgui();
-    std::cout << "Application initialized!" << std::endl;
     initGrid3D();
+    std::cout << "Application initialized!" << std::endl;
     return true;
 }
 
@@ -88,7 +89,6 @@ bool Application::initShader() {
 void Application::initGrid3D() { 
     // GridConfig config;
     // grid3D = std::make_shared<Grid3D>(config, _mainShader);
-
     axes = std::make_unique<Axes>(10.0f, 0.1f, 0.8f, 0.4f,true);
     equation= std::make_unique<Equation>();
 }
@@ -138,8 +138,13 @@ void Application::render(float deltaTime){
     // grid3D->render(*devCamera);
     // cube->render(*devCamera);
     axes->draw(_mainShader);
-    //equation->draw(_mainShader);
+    equation->draw(_mainShader);
+}
 
+
+void Application::update(float deltaTime) {
+    activeCamera->setDragging(_isDragging);
+    activeCamera->update(deltaTime);
 }
 
 
@@ -152,18 +157,8 @@ void Application::run() {
     lastFrame = static_cast<float>(glfwGetTime());
     glPolygonMode(GL_FRONT_AND_BACK , GL_LINE);
 
-    std::vector<glm::vec3> vertices;
-    vertices.push_back(glm::vec3(1,1, 1));
     //vertices.push_back(glm::vec3(5,4, 3));
     //vertices.push_back(glm::vec3(5-1,3, 2));
-
-
-    VertexBuffer vbo =  createVertexBuffer();
-    VerteXArray vao ;
-
-
-    vbo.setData(vertices.data(), vertices.size() * sizeof(glm::vec3));
-    vao.addVertexBuffer(vbo, 0, 3, GL_FLOAT);
 
 
     while(!glfwWindowShouldClose(this->window)) {
@@ -178,13 +173,8 @@ void Application::run() {
         _mainShader->use();
         _mainShader->setMat4("view",activeCamera->getViewMatrix());
 
-        glPointSize(3.0f);
-        vao.drawArrays(GL_POINTS, 0, 1 );
         render(deltaTime);
-
-
-
-
+        update(deltaTime);
 
         glfwPollEvents();
         glfwSwapBuffers(window); // Swap the front and back buffers
@@ -214,7 +204,6 @@ void Application::updateProjectionMatrix() {
         std::cerr << "Error updating Projection Matrix: Shader not initialized!" << std::endl;
     }   
 }
-
 
 void Application::updateViewMatrix()  const{
     // Update the view matrix if needed
@@ -315,5 +304,8 @@ void Application::mouseButton_callback(GLFWwindow* window, int button, int actio
             app->_isDragging = false;
         }
     }
+}
 
+bool Application::isDragging() {
+    return _isDragging;
 }

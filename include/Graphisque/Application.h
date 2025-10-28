@@ -63,9 +63,12 @@ class Application {
         bool initShader();
         void initGrid3D();
         bool initImgui();
+        bool isDragging();
         void processInput(float deltaTime);
 
         void render(float deltaTime);
+        void update(float deltaTime);
+
         void run() ;
         
 

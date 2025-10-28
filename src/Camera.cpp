@@ -8,6 +8,13 @@ Camera::Camera(glm::vec3 position, glm::vec3 up, float yaw, float pitch)
     _devMode = false;
 }   
 
+void Camera::setDragging(bool isDragging) {
+    this->isDragging = isDragging;
+}
+
+void Camera::update(float deltaTime) {
+}
+
 
 glm::mat4 Camera::getViewMatrix() const {
     return glm::lookAt(_position, _position + _front, _up);
@@ -68,7 +75,6 @@ void Camera::handleMouseMovement(float xOffset, float yOffset, GLboolean const c
             _pitch = -89.0f;
     }
     this->updateCameraVectors();
-
 }
 
 
@@ -120,11 +126,44 @@ void OrbitalCamera::initYawPitch() {
 glm::mat4 OrbitalCamera::getViewMatrix() const {
     return glm::lookAt(_position, _target, _worldUp);
 }
+void OrbitalCamera::update(float deltaTime) {
+    const float damping = 0.90f;           // ease-out damping
+    const float transitionPhase = 0.25f;   // seconds to damp
+    const float velocityScale = 3.0f;      // controls proportional speed multiplier
+    static float timeSinceRelease = 0.0f;
+    static bool hasSettled = false;
+    static float steadyYawVelocity = 0.0f;
 
+    if (!isDragging) {
+        timeSinceRelease += deltaTime;
 
-void OrbitalCamera::update(float deltaX, float deltaY) { 
+        if (!hasSettled) {
+            // Phase 1: gentle easing after release
+            _yaw -= _yawVelocity * deltaTime * 60.0f;
+            _yawVelocity *= damping;
 
+            if (timeSinceRelease > transitionPhase) {
+                hasSettled = true;
+
+                steadyYawVelocity = _yawVelocity * velocityScale;
+
+                // Clamp max spin speed (to avoid runaway)
+                steadyYawVelocity = glm::clamp(steadyYawVelocity, -3.0f, 3.0f);
+            }
+        } else {
+            // Phase 2: steady spin at constant speed proportional to flick
+            _yaw -= steadyYawVelocity * deltaTime * 60.0f;
+        }
+    } else {
+        // Reset state on new drag
+        timeSinceRelease = 0.0f;
+        hasSettled = false;
+    }
+
+    updateCameraVectors();
 }
+
+
 
 void OrbitalCamera::updateCameraVectors() { 
     glm::vec3 direction; 
@@ -137,20 +176,26 @@ void OrbitalCamera::updateCameraVectors() {
 }
 
 
-void OrbitalCamera::handleMouseMovement(float xOffset, float yOffset, GLboolean const constraintPitch) { 
+//needs some fix for flick
+void OrbitalCamera::handleMouseMovement(float xOffset, float yOffset, GLboolean constraintPitch) {
     float sensitivity = GLOBAL::IS_CURSOR_DISABLED ? 0.1f : 0.5f;
     xOffset *= sensitivity;
     yOffset *= sensitivity;
-    _yaw -= xOffset;
-    _pitch -= yOffset;
 
-
-    if(constraintPitch) { 
-        if(_pitch > 89.0f)
-            _pitch = 89.0f;
-        if(_pitch < -89.0f) 
-            _pitch = -89.0f;
+    if (isDragging) {
+        _yaw -= xOffset;
+        _pitch -= yOffset;
     }
-    updateCameraVectors();
 
+    // Smooth flick detection (EMA filter)
+    const float smoothing = 0.3f; // lower = smoother
+    _yawVelocity = (1.0f - smoothing) * _yawVelocity + smoothing * xOffset;
+    _pitchVelocity = (1.0f - smoothing) * _pitchVelocity + smoothing * yOffset;
+
+    if (constraintPitch) {
+        _pitch = glm::clamp(_pitch, -89.0f, 89.0f);
+        _yaw = glm::clamp(_yaw, -89.0f, 89.0f);
+    }
+
+    updateCameraVectors();
 }
