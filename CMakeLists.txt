@@ -19,7 +19,8 @@ endif()
 
 find_package(OpenGL REQUIRED)
 
-
+# Dependencies (GLFW / GLM)
+include(cmake/dependencies.cmake)
 
 #add subdirectories
 add_subdirectory(src)

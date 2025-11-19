@@ -1,7 +1,7 @@
+#ifndef GRID3D_H
+#define GRID3D_H
+
 #include <iostream> 
- 
-
-
 #include "Shader.h"
 
 #include "IRenderable.h"
@@ -30,5 +30,6 @@ class Grid3D : public IRenderable{
 
 };
 
+#endif //GRID3D_H
 
 

@@ -4,7 +4,13 @@ include_directories(${INCLUDE_DIR})
 include_directories(${INCLUDE_DIR}/Graphisque)
 include_directories(${INCLUDE_DIR}/imgui)
 
-
+# Explicit dependency include dirs
+if(DEFINED GLFW_INCLUDE_DIR)
+    include_directories(${GLFW_INCLUDE_DIR})
+endif()
+if(DEFINED GLM_INCLUDE_DIR)
+    include_directories(${GLM_INCLUDE_DIR})
+endif()
 
 #source files 
 file(GLOB_RECURSE SRC_FILES ${SRC_DIR}/*.cpp ${SRC_DIR}/*.c)
@@ -16,9 +22,7 @@ list(APPEND SRC_FILES
         ${SRC_DIR}/imgui/imgui_impl_opengl3.cpp
 )
 
-
 add_definitions(-DIMGUI_IMPL_OPENGL_LOADER_GLAD)
-
 
 add_executable(${PROJECT_NAME} ${SRC_FILES}
         ../include/Graphisque/Equations.h)
@@ -28,9 +32,12 @@ add_custom_command(TARGET Graphisque POST_BUILD
     ${CMAKE_SOURCE_DIR}/shaders $<TARGET_FILE_DIR:Graphisque>/shaders
 )
 
-
-
-target_link_libraries(${PROJECT_NAME} PRIVATE glfw OpenGL::GL)
+# Link glfw, OpenGL and glm
+if(TARGET glm::glm)
+    target_link_libraries(${PROJECT_NAME} PRIVATE glfw OpenGL::GL glm::glm)
+else()
+    target_link_libraries(${PROJECT_NAME} PRIVATE glfw OpenGL::GL)
+endif()
 
 
 

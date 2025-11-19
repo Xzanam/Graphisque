@@ -28,7 +28,6 @@ class Cube:public IRenderable{
         std::shared_ptr<VerteXArray> _vao;
         std::shared_ptr<Shader> _shader;
         void setupCube();
-
         std::vector<glm::vec3> vertices;
 
 

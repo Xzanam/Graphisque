@@ -3,6 +3,7 @@
 
 #include "Buffer.h"
 #include <memory>
+
 #include <cmath>
 
 
@@ -12,6 +13,8 @@
 #include "Camera.h"
 
 
+
+#define M_PI 3.14159265358979323846
 
 class Shape { 
     protected:  
@@ -281,4 +284,4 @@ class Axes {
 
 
 
-#endif
+#endif 
